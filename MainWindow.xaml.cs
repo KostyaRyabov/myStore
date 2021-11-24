@@ -12,9 +12,9 @@ namespace myStore
             OpenMainPage();
         }
 
-        void OpenMainPage(int ID = -1)
+        void OpenMainPage(int p = 0)
         {
-            var page = new myPages.MainMenu(ID);
+            var page = new myPages.MainMenu(p);
             Content = page;
 
             page.Ready2OpenNotebookEvent += OpenNotebookPage;

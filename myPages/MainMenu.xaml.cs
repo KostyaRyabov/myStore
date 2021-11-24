@@ -26,31 +26,30 @@ namespace myStore.myPages
 
         
         public RelayCommand GetAllDataCommand { get; }
-        public RelayCommand ReloadCommand { get; }
-
-
-        public delegate void BottomReachedEventHandler();
-        public event BottomReachedEventHandler BottomReachedEvent;
+        public RelayCommand ChangePageCommand { get; }
 
 
         public delegate void Ready2OpenNotebookEventHandler(int ID);
         public event Ready2OpenNotebookEventHandler Ready2OpenNotebookEvent;
 
-        public MainMenu(int ID = -1)
+        private const int limit = 20;
+
+        private int cur_page = 0;
+        public int CurPage
         {
+            get { return cur_page; }
+            set
+            {
+                cur_page = value;
+                OnPropertyChanged("CurPage");
+            }
+        }
+
+        public MainMenu(int page = 0)
+        {
+            CurPage = page;
+            
             notebooks = new ObservableCollection<NotebookView>();
-
-            BottomReachedEvent += async () => {
-                int id = notebooks.LastOrDefault()?.notebook_id ?? 0;
-                
-                var sql = $"SELECT * FROM notebook_view WHERE notebook_id > {id} ORDER BY notebook_id limit 50";
-
-                await foreach (NotebookView item in Database.Enumerate<NotebookView>(sql))
-                {
-                    notebooks.Add(item);
-                }
-            };
-
 
             GetAllDataCommand = new RelayCommand(
                 obj => Ready2OpenNotebookEvent((int)obj),
@@ -85,87 +84,45 @@ namespace myStore.myPages
             );
 
 
-            ReloadCommand = new RelayCommand(
-                async _ =>
+            ChangePageCommand = new RelayCommand(
+                async obj =>
                 {
+                    var v = (int)obj;
+
+                    int new_page = (v == -2) ? 0: CurPage + v;
+
                     IsRemovable = false;
-                    notebooks.Clear();
+                    bool IsClearable = true;
 
-                    string sql;
-
-                    if (ID < 0) sql = $"SELECT * FROM notebook_view ORDER BY notebook_id limit 50";
-                    else sql = $"SELECT * FROM notebook_view WHERE notebook_id < {ID+25} ORDER BY notebook_id";
-
+                    string sql = $"SELECT * FROM notebook_view ORDER BY notebook_id LIMIT {limit} OFFSET {new_page * limit}";
+                    
                     await foreach (NotebookView item in Database.Enumerate<NotebookView>(sql))
                     {
+                        if (IsClearable)
+                        {
+                            IsClearable = false;
+                            CurPage = new_page;
+                            notebooks.Clear();
+                        }
+
                         notebooks.Add(item);
                     }
+                },
+                obj =>
+                {
+                    if (obj is null) return false;
 
-                    ScrollToNotebook(ID);
-                });
+                    return (CurPage + (int)obj >= 0 || notebooks.Count < limit);
+                }
+                );
 
 
             InitializeComponent();
 
-            ReloadCommand.Execute(0);
+            ChangePageCommand.Execute(0);
         }
-
-        public static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
-        {
-            if (depObj != null)
-            {
-                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-                {
-                    var child = VisualTreeHelper.GetChild(depObj, i);
-
-                    if (child != null && child is T)
-                        yield return (T)child;
-
-                    foreach (T childOfChild in FindVisualChildren<T>(child))
-                        yield return childOfChild;
-                }
-            }
-        }
-
-        public async void ScrollToNotebook(int ID)
-        {
-            if (ID <= 0) return;
-
-            NotebookView notebook_view = notebooks.Where(n => n.notebook_id == ID).FirstOrDefault();
-
-            var a = gList.Items[0] as StackPanel;
-
-            await Task.Delay(100);
-
-            var idx = notebooks.IndexOf(notebook_view);
-
-            var items = FindVisualChildren<StackPanel>(gList).ToList();
-
-            if (items.Count < idx) return;
-
-            var item = items[idx];
-
-            Console.WriteLine($"{ID} -> {idx}");
-
-            var currentScrollPosition = ScrollableMenu.VerticalOffset;
-            var point = new Point(0, currentScrollPosition);
-            var targetPosition = item.TransformToVisual(ScrollableMenu).Transform(point);
-            ScrollableMenu.ScrollToVerticalOffset(targetPosition.Y);
-        }
-
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string prop = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-
-        private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
-            if (e.VerticalOffset > (sender as ScrollViewer).ScrollableHeight - 500) { BottomReachedEvent(); }
-        }
-
-
-        private void StackPanel_Loaded(object sender, RoutedEventArgs e)
-        {
-            
-        }
     }
 }

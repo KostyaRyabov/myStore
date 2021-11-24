@@ -10,7 +10,6 @@
         xmlns:bp="clr-namespace:BlackPearl.Controls.CoreLibrary;assembly=BlackPearl.Controls.CoreLibrary"
         DataContext="{Binding RelativeSource={RelativeSource Self}}" x:Name="LayoutRoot">
     <UserControl.Resources>
-        <converters:MultipleCommandParameters x:Key="MultipleCommandParameters"/>
         <root:myLookUpContract x:Key="mluContract"/>
 
         <Style TargetType="TextBox">
