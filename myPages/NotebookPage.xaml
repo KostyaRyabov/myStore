@@ -1,0 +1,348 @@
+﻿<UserControl x:Class="myStore.myPages.NotebookPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:root="clr-namespace:myStore"
+        mc:Ignorable="d"
+        xmlns:converters="clr-namespace:myStore.converters"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:bp="clr-namespace:BlackPearl.Controls.CoreLibrary;assembly=BlackPearl.Controls.CoreLibrary"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}" x:Name="LayoutRoot">
+    <UserControl.Resources>
+        <converters:MultipleCommandParameters x:Key="MultipleCommandParameters"/>
+        <root:myLookUpContract x:Key="mluContract"/>
+
+        <Style TargetType="TextBox">
+            <Style.Setters>
+                <EventSetter Event="TextChanged" Handler="ValueChanged"/>
+            </Style.Setters>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Style.Setters>
+                <EventSetter Event="SelectionChanged" Handler="ValueChanged"/>
+            </Style.Setters>
+        </Style>
+        <Style TargetType="bp:MultiSelectCombobox">
+            <Style.Setters>
+                <EventSetter Event="SelectionChanged" Handler="ValueChanged"/>
+            </Style.Setters>
+        </Style>
+        <Style TargetType="CheckBox">
+            <Style.Setters>
+                <EventSetter Event="Checked" Handler="ValueChanged"/>
+                <EventSetter Event="Unchecked" Handler="ValueChanged"/>
+            </Style.Setters>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.05*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Button Command="{Binding CancelChangesCommand}" Content="cancel"/>
+            <Button Command="{Binding SaveChangesCommand}" Content="save"/>
+            <Button Command="{Binding OpenMainMenuCommand}" Content="MENU"/>
+            <Button Command="{Binding RemoveNotebookCommand}" Content="remove"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel DataContext="{Binding notebook}">
+                <StackPanel.Resources>
+                    <ResourceDictionary>
+                        <ResourceDictionary.MergedDictionaries>
+                            <ResourceDictionary Source="/src/styles/GroupedProperties.xaml"/>
+                        </ResourceDictionary.MergedDictionaries>
+                    </ResourceDictionary>
+                </StackPanel.Resources>
+
+                <Image Source="{Binding image}" Width="256" Height="256" SourceUpdated="ValueChanged" Name="image"/>
+                
+                <WrapPanel HorizontalAlignment="Center">
+                    <GroupBox>
+                        <StackPanel>
+                            <Label Content="notebook_id"/>
+                            <TextBox Text="{Binding notebook_id, UpdateSourceTrigger=PropertyChanged}" Name="notebook_id"/>
+
+                            <Label Content="price"/>
+                            <TextBox Text="{Binding price, UpdateSourceTrigger=PropertyChanged}" Name="price"/>
+
+                            <Label Content="name"/>
+                            <TextBox Text="{Binding name, UpdateSourceTrigger=PropertyChanged}" Name="name"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="display">
+                        <StackPanel>
+                            <Label Content="display_max_frequency_hz"/>
+                            <TextBox Text="{Binding display_max_frequency_hz, UpdateSourceTrigger=PropertyChanged}" Name="display_max_frequency_hz"/>
+
+                            <Label Content="display_diagonal"/>
+                            <TextBox Text="{Binding display_diagonal, UpdateSourceTrigger=PropertyChanged}" Name="display_diagonal"/>
+
+                            <Label Content="display_resolution"/>
+                            <TextBox Text="{Binding display_resolution, UpdateSourceTrigger=PropertyChanged}" Name="display_resolution"/>
+
+                            <Label Content="display_technology"/>
+                            <TextBox Text="{Binding display_technology, UpdateSourceTrigger=PropertyChanged}" Name="display_technology"/>
+
+                            <Label Content="display_surface"/>
+                            <TextBox Text="{Binding display_surface, UpdateSourceTrigger=PropertyChanged}" Name="display_surface"/>
+
+                            <Label Content="display_screen_backlight_type"/>
+                            <TextBox Text="{Binding display_screen_backlight_type, UpdateSourceTrigger=PropertyChanged}" Name="display_screen_backlight_type"/>
+
+                            <Label Content="display_brightness"/>
+                            <TextBox Text="{Binding display_brightness, UpdateSourceTrigger=PropertyChanged}" Name="display_brightness"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="cpu">
+                        <StackPanel>
+                            <Label Content="cpu_id"/>
+                            <TextBox Text="{Binding cpu_id, UpdateSourceTrigger=PropertyChanged}" Name="cpu_id"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="gpu">
+                        <StackPanel>
+                            <Label Content="gpu_id"/>
+                            <TextBox Text="{Binding gpu_id, UpdateSourceTrigger=PropertyChanged}" Name="gpu_id"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="memory">
+                        <StackPanel>
+                            <Label Content="memory_drive_type"/>
+                            <TextBox Text="{Binding memory_drive_type, UpdateSourceTrigger=PropertyChanged}" Name="memory_drive_type"/>
+
+                            <Label Content="memory_ram_type"/>
+                            <TextBox Text="{Binding memory_ram_type, UpdateSourceTrigger=PropertyChanged}" Name="memory_ram_type"/>
+
+                            <Label Content="memory_ram_mb"/>
+                            <TextBox Text="{Binding memory_ram_mb, UpdateSourceTrigger=PropertyChanged}" Name="memory_ram_mb"/>
+
+                            <Label Content="memory_max_ram_gb"/>
+                            <TextBox Text="{Binding memory_max_ram_gb, UpdateSourceTrigger=PropertyChanged}" Name="memory_max_ram_gb"/>
+
+                            <Label Content="memory_amount_of_ram_slots"/>
+                            <TextBox Text="{Binding memory_amount_of_ram_slots, UpdateSourceTrigger=PropertyChanged}" Name="memory_amount_of_ram_slots"/>
+
+                            <Label Content="memory_ssd_capacity_gb"/>
+                            <TextBox Text="{Binding memory_ssd_capacity_gb, UpdateSourceTrigger=PropertyChanged}" Name="memory_ssd_capacity_gb"/>
+
+                            <Label Content="memory_ram_frequency_mhz"/>
+                            <TextBox Text="{Binding memory_ram_frequency_mhz, UpdateSourceTrigger=PropertyChanged}" Name="memory_ram_frequency_mhz"/>
+
+                            <Label Content="memory_emmc_capacity_gb"/>
+                            <TextBox Text="{Binding memory_emmc_capacity_gb, UpdateSourceTrigger=PropertyChanged}" Name="memory_emmc_capacity_gb"/>
+
+                            <Label Content="memory_hdd_capacity_gb"/>
+                            <TextBox Text="{Binding memory_hdd_capacity_gb, UpdateSourceTrigger=PropertyChanged}" Name="memory_hdd_capacity_gb"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <StackPanel>
+                        <GroupBox Header="audio">
+                            <StackPanel>
+                                <CheckBox IsChecked="{Binding audio_embedded_speaker, UpdateSourceTrigger=PropertyChanged}" Content="audio_embedded_speaker" Name="audio_embedded_speaker"/>
+
+                                <CheckBox IsChecked="{Binding audio_embedded_microphone, UpdateSourceTrigger=PropertyChanged}" Content="audio_embedded_microphone" Name="audio_embedded_microphone"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="case">
+                            <StackPanel>
+                                <CheckBox IsChecked="{Binding case_touch_id, UpdateSourceTrigger=PropertyChanged}" Content="case_touch_id" Name="case_touch_id"/>
+
+                                <Label Content="case_camera"/>
+                                <TextBox Text="{Binding case_camera, UpdateSourceTrigger=PropertyChanged}" Name="case_camera"/>
+
+                                <Label Content="case_material"/>
+                                <TextBox Text="{Binding case_material, UpdateSourceTrigger=PropertyChanged}" Name="case_material"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="keyboard">
+                            <StackPanel>
+                                <Label Content="keyboard_layout"/>
+                                <TextBox Text="{Binding keyboard_layout, UpdateSourceTrigger=PropertyChanged}" Name="keyboard_layout"/>
+
+                                <CheckBox IsChecked="{Binding keyboard_backlit, UpdateSourceTrigger=PropertyChanged}" Content="keyboard_backlit" Name="keyboard_backlit"/>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+
+                    <GroupBox Header="interfaces">
+                        <StackPanel>
+                            <Label Content="interfaces_external_usb32"/>
+                            <TextBox Text="{Binding interfaces_external_usb32, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_external_usb32"/>
+
+                            <Label Content="interfaces_usb_ports"/>
+                            <TextBox Text="{Binding interfaces_usb_ports, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_usb_ports"/>
+
+                            <Label Content="interfaces_usb20"/>
+                            <TextBox Text="{Binding interfaces_usb20, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_usb20"/>
+
+                            <Label Content="interfaces_usb30"/>
+                            <TextBox Text="{Binding interfaces_usb30, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_usb30"/>
+
+                            <Label Content="interfaces_usb_type_c"/>
+                            <TextBox Text="{Binding interfaces_usb_type_c, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_usb_type_c"/>
+
+                            <Label Content="interfaces_hdmi_port"/>
+                            <TextBox Text="{Binding interfaces_hdmi_port, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_hdmi_port"/>
+
+                            <Label Content="interfaces_rj45"/>
+                            <TextBox Text="{Binding interfaces_rj45, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_rj45"/>
+
+                            <Label Content="interfaces_bluetooth"/>
+                            <TextBox Text="{Binding interfaces_bluetooth, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_bluetooth"/>
+
+                            <Label Content="interfaces_wifi"/>
+                            <bp:MultiSelectCombobox
+                                ItemSource="{Binding List_interfaces_wifi, ElementName=LayoutRoot, UpdateSourceTrigger=PropertyChanged}"
+                                SelectedItems="{Binding interfaces_wifi, UpdateSourceTrigger=PropertyChanged}" ItemSeparator=";"
+                                LookUpContract="{StaticResource mluContract}" Name="interfaces_wifi"/>
+                            
+                            <Label Content="interfaces_headphone_microphone_jack"/>
+                            <TextBox Text="{Binding interfaces_headphone_microphone_jack, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_headphone_microphone_jack"/>
+
+                            <Label Content="interfaces_memory_cards"/>
+                            <bp:MultiSelectCombobox
+                                ItemSource="{Binding List_interfaces_memory_cards, ElementName=LayoutRoot, UpdateSourceTrigger=PropertyChanged}"
+                                SelectedItems="{Binding interfaces_memory_cards, UpdateSourceTrigger=PropertyChanged}" ItemSeparator=";"
+                                LookUpContract="{StaticResource mluContract}" Name="interfaces_memory_cards"/>
+
+                            <CheckBox IsChecked="{Binding interfaces_embedded_card_reader, UpdateSourceTrigger=PropertyChanged}" Content="interfaces_embedded_card_reader" Name="interfaces_embedded_card_reader"/>
+
+                            <CheckBox IsChecked="{Binding interfaces_thunderbolt, UpdateSourceTrigger=PropertyChanged}" Content="interfaces_thunderbolt" Name="interfaces_thunderbolt"/>
+
+                            <Label Content="interfaces_thunderbolt3_usb_type_c"/>
+                            <TextBox Text="{Binding interfaces_thunderbolt3_usb_type_c, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_thunderbolt3_usb_type_c"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="battery">
+                        <StackPanel>
+                            <Label Content="battery_browsing_internet_wirelessly_h"/>
+                            <TextBox Text="{Binding battery_browsing_internet_wirelessly_h, UpdateSourceTrigger=PropertyChanged}" Name="battery_browsing_internet_wirelessly_h"/>
+
+                            <Label Content="battery_playing_movies_in_itunes_app_h"/>
+                            <TextBox Text="{Binding battery_playing_movies_in_itunes_app_h, UpdateSourceTrigger=PropertyChanged}" Name="battery_playing_movies_in_itunes_app_h"/>
+
+                            <Label Content="battery_battery_type"/>
+                            <TextBox Text="{Binding battery_battery_type, UpdateSourceTrigger=PropertyChanged}" Name="battery_battery_type"/>
+
+                            <Label Content="battery_cells_count"/>
+                            <TextBox Text="{Binding battery_cells_count, UpdateSourceTrigger=PropertyChanged}" Name="battery_cells_count"/>
+
+                            <Label Content="battery_capacity_wph"/>
+                            <TextBox Text="{Binding battery_capacity_wph, UpdateSourceTrigger=PropertyChanged}" Name="battery_capacity_wph"/>
+
+                            <Label Content="battery_capacity_mah"/>
+                            <TextBox Text="{Binding battery_capacity_mah, UpdateSourceTrigger=PropertyChanged}" Name="battery_capacity_mah"/>
+
+                            <Label Content="battery_voltage"/>
+                            <TextBox Text="{Binding battery_voltage, UpdateSourceTrigger=PropertyChanged}" Name="battery_voltage"/>
+
+                            <Label Content="battery_work_duration"/>
+                            <TextBox Text="{Binding battery_work_duration, UpdateSourceTrigger=PropertyChanged}" Name="battery_work_duration"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <StackPanel>
+                        <GroupBox Header="dimensions">
+                            <StackPanel>
+                                <Label Content="dimensions_height"/>
+                                <TextBox Text="{Binding dimensions_height, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_height"/>
+
+                                <Label Content="dimensions_width"/>
+                                <TextBox Text="{Binding dimensions_width, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_width"/>
+
+                                <Label Content="dimensions_thickness"/>
+                                <TextBox Text="{Binding dimensions_thickness, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_thickness"/>
+
+                                <Label Content="dimensions_weight"/>
+                                <TextBox Text="{Binding dimensions_weight, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_weight"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="other">
+                            <StackPanel>
+                                <Label Content="other_producer_code"/>
+                                <TextBox Text="{Binding other_producer_code, UpdateSourceTrigger=PropertyChanged}" Name="other_producer_code"/>
+
+                                <Label Content="other_producer_id"/>
+                                <ComboBox SelectedValuePath="producer_id" Name="other_producer_id"
+                                          DisplayMemberPath="name"
+                                          SelectedValue="{Binding other_producer_id, UpdateSourceTrigger=PropertyChanged}"
+                                          ItemsSource="{Binding producer_list, ElementName=LayoutRoot, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                <Label Content="other_guarantee_period"/>
+                                <TextBox Text="{Binding other_guarantee_period, UpdateSourceTrigger=PropertyChanged}" Name="other_guarantee_period"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="software">
+                            <StackPanel>
+                                <Label Content="software_os_id"/>
+                                <ComboBox SelectedValuePath="os_id" Name="software_os_id"
+                                          DisplayMemberPath="name"
+                                          SelectedValue="{Binding software_os_id}"
+                                          ItemsSource="{Binding os_list, ElementName=LayoutRoot, UpdateSourceTrigger=PropertyChanged}"
+                                         />
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </WrapPanel>
+
+                <Label Content="comments"/>
+                <ItemsControl ItemsSource="{Binding comments, ElementName=LayoutRoot}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <GroupBox>
+                                <StackPanel>
+                                    <Label Content="{Binding comment_id, StringFormat=$comment_{0}}"/>
+
+                                    <Label Content="plus"/>
+                                    <TextBox Text="{Binding plus_text, UpdateSourceTrigger=PropertyChanged}" Name="plus_text"/>
+
+                                    <Label Content="minus"/>
+                                    <TextBox Text="{Binding minus_text, UpdateSourceTrigger=PropertyChanged}" Name="minus_text"/>
+
+                                    <Label Content="review"/>
+                                    <TextBox Text="{Binding review_text, UpdateSourceTrigger=PropertyChanged}" Name="review_text"/>
+
+                                    <GroupBox Header="screen_rate">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding screen_rate}"/>
+                                            <Slider Value="{Binding screen_rate, UpdateSourceTrigger=PropertyChanged}"
+                                                    Minimum="0" Maximum="10" Width="200" ValueChanged="ValueChanged" Name="screen_rate"/>
+                                        </StackPanel>
+                                    </GroupBox>
+                                    <GroupBox Header="power_rate">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding power_rate}"/>
+                                            <Slider Value="{Binding power_rate, UpdateSourceTrigger=PropertyChanged}"
+                                                    Minimum="0" Maximum="10" Width="200" ValueChanged="ValueChanged" Name="power_rate"/>
+                                        </StackPanel>
+                                    </GroupBox>
+                                    <GroupBox Header="work_duration_rate">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding work_duration_rate}"/>
+                                            <Slider Value="{Binding work_duration_rate, UpdateSourceTrigger=PropertyChanged}"
+                                                    Minimum="0" Maximum="10" Width="200" ValueChanged="ValueChanged" Name="work_duration_rate"/>
+                                        </StackPanel>
+                                    </GroupBox>
+                                </StackPanel>
+                            </GroupBox>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
