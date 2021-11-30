@@ -10,36 +10,8 @@
         xmlns:bp="clr-namespace:BlackPearl.Controls.CoreLibrary;assembly=BlackPearl.Controls.CoreLibrary"
         DataContext="{Binding RelativeSource={RelativeSource Self}}" x:Name="LayoutRoot">
     <UserControl.Resources>
-        <Style TargetType="Label">
-            <Setter Property="Margin" Value="50,20,100,50"/>
-            <Setter Property="HorizontalAlignment" Value="Right"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="42"/>
-        </Style>
-
         <root:myLookUpContract x:Key="mluContract"/>
-
-        <!--<Style TargetType="TextBox">
-            <Style.Setters>
-                <EventSetter Event="TextChanged" Handler="ValueChanged"/>
-            </Style.Setters>
-        </Style>
-        <Style TargetType="ComboBox">
-            <Style.Setters>
-                <EventSetter Event="SelectionChanged" Handler="ValueChanged"/>
-            </Style.Setters>
-        </Style>
-        <Style TargetType="bp:MultiSelectCombobox">
-            <Style.Setters>
-                <EventSetter Event="SelectionChanged" Handler="ValueChanged"/>
-            </Style.Setters>
-        </Style>
-        <Style TargetType="CheckBox">
-            <Style.Setters>
-                <EventSetter Event="Checked" Handler="ValueChanged"/>
-                <EventSetter Event="Unchecked" Handler="ValueChanged"/>
-            </Style.Setters>
-        </Style>-->
+        <converters:LessThen x:Key="LessThenConverter"/>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -48,17 +20,76 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" Grid.Row="0">
-            <Button Command="{Binding CancelChangesCommand}" Content="cancel"/>
-            <Button Command="{Binding SaveChangesCommand}" Content="save"/>
+            <Button Command="{Binding CancelChangesCommand}" Content="cancel">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Command="{Binding SaveChangesCommand}" Content="save">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Command="{Binding EditCommand}" Content="edit">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
             <Button Command="{Binding OpenMainMenuCommand}" Content="MENU"/>
-            <Button Command="{Binding RemoveNotebookCommand}" Content="remove"/>
+            <Button Command="{Binding RemoveNotebookCommand}" Content="remove">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </StackPanel>
 
         <ScrollViewer Grid.Row="1">
             <StackPanel DataContext="{Binding notebook}">
                 <StackPanel.Resources>
+                    <Style TargetType="Label">
+                        <Setter Property="Margin" Value="50,20,100,50"/>
+                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="FontSize" Value="42"/>
+                    </Style>
+                    <Style TargetType="WrapPanel">
+                        <Setter Property="Orientation" Value="Horizontal"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+
+                        <Style.Resources>
+                            <Style TargetType="WrapPanel">
+                                <Setter Property="MaxHeight" Value="300"/>
+                                <Setter Property="Orientation" Value="Vertical"/>
+                            </Style>
+                        </Style.Resources>
+                    </Style>
                     <Style TargetType="GroupBox">
-                        <Setter Property="Width" Value="300"/>
+                        <Setter Property="MinWidth" Value="200"/>
+
                         <Setter Property="VerticalAlignment" Value="Top"/>
                         <Setter Property="Margin" Value="20,0,20,50"/>
                         <Setter Property="Background" Value="LightBlue"/>
@@ -84,13 +115,44 @@
                         </Setter>
 
                         <Style.Resources>
+                            <Style TargetType="WrapPanel">
+                                <Setter Property="MaxHeight" Value="200"/>
+                                <Setter Property="Orientation" Value="Vertical"/>
+                            </Style>
+
                             <Style TargetType="GroupBox">
+                                <Setter Property="Width" Value="250"/>
                                 <Setter Property="BorderThickness" Value="0"/>
 
+                                <Style.Resources>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Resources>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding isEditable, ElementName=LayoutRoot}" Value="false">
+                                                        <Setter Property="Padding" Value="130,0,0,0"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                            <Style TargetType="Slider">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding isEditable, ElementName=LayoutRoot}" Value="false">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Style.Resources>
+                                    </Style>
+                                </Style.Resources>
+
                                 <Style.Triggers>
-                                    <Trigger Property="ActualHeight" Value="22.96">
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Path=ActualHeight, RelativeSource={RelativeSource self}, Converter={StaticResource LessThenConverter}, ConverterParameter=30}" Value="true"/>
+                                            <Condition Binding="{Binding isEditable, ElementName=LayoutRoot}" Value="false"/>
+                                        </MultiDataTrigger.Conditions>
                                         <Setter Property="Visibility" Value="Collapsed"/>
-                                    </Trigger>
+                                    </MultiDataTrigger>
                                 </Style.Triggers>
                             </Style>
                             <Style TargetType="ComboBox">
@@ -165,27 +227,37 @@
                                 <Setter Property="FontStyle" Value="Italic"/>
                             </Style>
                         </Style.Resources>
+
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Path=ActualHeight, RelativeSource={RelativeSource self}, Converter={StaticResource LessThenConverter}, ConverterParameter=30}" Value="true"/>
+                                    <Condition Binding="{Binding isEditable, ElementName=LayoutRoot}" Value="false"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
                     </Style>
                 </StackPanel.Resources>
 
                 <Image Source="{Binding image}" Width="256" Height="256" Name="image"/>
 
                 <Label Content="Specifications"/>
-                <WrapPanel HorizontalAlignment="Center">
+                <WrapPanel>
                     <GroupBox>
-                        <StackPanel>
+                        <WrapPanel Height="100" Orientation="Vertical">
                             <GroupBox Header="price">
                                 <TextBox Text="{Binding price, UpdateSourceTrigger=PropertyChanged}" Name="price"/>
                             </GroupBox>
-                            
+
                             <GroupBox Header="name">
                                 <TextBox Text="{Binding name, UpdateSourceTrigger=PropertyChanged}" Name="name"/>
                             </GroupBox>
-                        </StackPanel>
+                        </WrapPanel>
                     </GroupBox>
 
                     <GroupBox Header="display">
-                        <StackPanel>
+                        <WrapPanel>
                             <GroupBox Header="display_max_frequency_hz">
                                 <TextBox Text="{Binding display_max_frequency_hz, UpdateSourceTrigger=PropertyChanged}" Name="display_max_frequency_hz"/>
                             </GroupBox>
@@ -213,98 +285,100 @@
                             <GroupBox Header="display_brightness">
                                 <TextBox Text="{Binding display_brightness, UpdateSourceTrigger=PropertyChanged}" Name="display_brightness"/>
                             </GroupBox>
-                        </StackPanel>
+                        </WrapPanel>
                     </GroupBox>
 
-                    <GroupBox Header="cpu">
-                        <ComboBox DisplayMemberPath="processor" SelectedValuePath="cpu_id"
-                                  SelectedValue="{Binding cpu_id, UpdateSourceTrigger=PropertyChanged}"
-                                  ItemsSource="{Binding cpu_list, ElementName=LayoutRoot, UpdateSourceTrigger=PropertyChanged}"/>
-                    </GroupBox>
+                    <WrapPanel>
+                        <GroupBox Header="cpu">
+                            <ComboBox DisplayMemberPath="processor" SelectedValuePath="cpu_id"
+                                      SelectedValue="{Binding cpu_id, UpdateSourceTrigger=PropertyChanged}"
+                                      ItemsSource="{Binding cpu_list, ElementName=LayoutRoot, UpdateSourceTrigger=PropertyChanged}"/>
+                        </GroupBox>
 
-                    <GroupBox Header="gpu">
-                        <ComboBox SelectedValue="{Binding gpu_id, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="gpu_id"
-                                  ItemsSource="{Binding gpu_list, ElementName=LayoutRoot, UpdateSourceTrigger=PropertyChanged}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding video_adapter}" Margin="5,0,0,0">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding video_adapter}" Value="{x:Null}">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
+                        <GroupBox Header="gpu">
+                            <ComboBox SelectedValue="{Binding gpu_id, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="gpu_id"
+                                      ItemsSource="{Binding gpu_list, ElementName=LayoutRoot, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding video_adapter}" Margin="5,0,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding video_adapter}" Value="{x:Null}">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
 
-                                        <TextBlock Text="{Binding video_card}" Margin="5,0,0,0">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding video_card}" Value="{x:Null}">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
+                                            <TextBlock Text="{Binding video_card}" Margin="5,0,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding video_card}" Value="{x:Null}">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
 
-                                        <TextBlock Text="{Binding video_memory_type}" Margin="5,0,0,0">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding video_memory_type}" Value="{x:Null}">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
+                                            <TextBlock Text="{Binding video_memory_type}" Margin="5,0,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding video_memory_type}" Value="{x:Null}">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
 
-                                        <TextBlock Margin="5,0,0,0">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding video_memory_size}" Value="{x:Null}">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
+                                            <TextBlock Margin="5,0,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding video_memory_size}" Value="{x:Null}">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
 
-                                            <TextBlock.Inlines>
-                                                <Run Text="{Binding video_memory_size}"/>
-                                                <Run Text="Мб "/>
-                                            </TextBlock.Inlines>
-                                        </TextBlock>
+                                                <TextBlock.Inlines>
+                                                    <Run Text="{Binding video_memory_size}"/>
+                                                    <Run Text="Мб "/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
 
-                                        <TextBlock Margin="5,0,0,0">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding num_of_cores}" Value="{x:Null}">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
+                                            <TextBlock Margin="5,0,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding num_of_cores}" Value="{x:Null}">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
 
-                                            <TextBlock.Inlines>
-                                                <Run Text="{Binding num_of_cores}"/>
-                                                <Run Text="ядер"/>
-                                            </TextBlock.Inlines>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </GroupBox>
+                                                <TextBlock.Inlines>
+                                                    <Run Text="{Binding num_of_cores}"/>
+                                                    <Run Text="ядер"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </GroupBox>
+                    </WrapPanel>
 
                     <GroupBox Header="memory">
-                        <StackPanel>
+                        <WrapPanel>
                             <GroupBox Header="memory_drive_type">
                                 <TextBox Text="{Binding memory_drive_type, UpdateSourceTrigger=PropertyChanged}" Name="memory_drive_type"/>
                             </GroupBox>
@@ -340,45 +414,45 @@
                             <GroupBox Header="memory_hdd_capacity_gb">
                                 <TextBox Text="{Binding memory_hdd_capacity_gb, UpdateSourceTrigger=PropertyChanged}" Name="memory_hdd_capacity_gb"/>
                             </GroupBox>
-                        </StackPanel>
+                        </WrapPanel>
                     </GroupBox>
 
-                    <StackPanel>
+                    <WrapPanel>
                         <GroupBox Header="audio">
-                            <StackPanel>
+                            <WrapPanel>
                                 <CheckBox IsChecked="{Binding audio_embedded_speaker, UpdateSourceTrigger=PropertyChanged}" Content="audio_embedded_speaker" Name="audio_embedded_speaker"/>
 
                                 <CheckBox IsChecked="{Binding audio_embedded_microphone, UpdateSourceTrigger=PropertyChanged}" Content="audio_embedded_microphone" Name="audio_embedded_microphone"/>
-                            </StackPanel>
+                            </WrapPanel>
                         </GroupBox>
 
                         <GroupBox Header="case">
-                            <StackPanel>
+                            <WrapPanel>
                                 <CheckBox IsChecked="{Binding case_touch_id, UpdateSourceTrigger=PropertyChanged}" Content="case_touch_id" Name="case_touch_id"/>
 
                                 <GroupBox Header="case_camera">
                                     <TextBox Text="{Binding case_camera, UpdateSourceTrigger=PropertyChanged}" Name="case_camera"/>
                                 </GroupBox>
-                                
+
                                 <GroupBox Header="case_material">
                                     <TextBox Text="{Binding case_material, UpdateSourceTrigger=PropertyChanged}" Name="case_material"/>
                                 </GroupBox>
-                            </StackPanel>
+                            </WrapPanel>
                         </GroupBox>
 
                         <GroupBox Header="keyboard">
-                            <StackPanel>
+                            <WrapPanel>
                                 <GroupBox Header="keyboard_layout">
                                     <TextBox Text="{Binding keyboard_layout, UpdateSourceTrigger=PropertyChanged}" Name="keyboard_layout"/>
                                 </GroupBox>
-                                
+
                                 <CheckBox IsChecked="{Binding keyboard_backlit, UpdateSourceTrigger=PropertyChanged}" Content="keyboard_backlit" Name="keyboard_backlit"/>
-                            </StackPanel>
+                            </WrapPanel>
                         </GroupBox>
-                    </StackPanel>
+                    </WrapPanel>
 
                     <GroupBox Header="interfaces">
-                        <StackPanel>
+                        <WrapPanel>
                             <GroupBox Header="interfaces_external_usb32">
                                 <TextBox Text="{Binding interfaces_external_usb32, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_external_usb32"/>
                             </GroupBox>
@@ -436,11 +510,11 @@
                             <GroupBox Header="interfaces_thunderbolt3_usb_type_c">
                                 <TextBox Text="{Binding interfaces_thunderbolt3_usb_type_c, UpdateSourceTrigger=PropertyChanged}" Name="interfaces_thunderbolt3_usb_type_c"/>
                             </GroupBox>
-                        </StackPanel>
+                        </WrapPanel>
                     </GroupBox>
 
                     <GroupBox Header="battery">
-                        <StackPanel>
+                        <WrapPanel>
                             <GroupBox Header="battery_browsing_internet_wirelessly_h">
                                 <TextBox Text="{Binding battery_browsing_internet_wirelessly_h, UpdateSourceTrigger=PropertyChanged}" Name="battery_browsing_internet_wirelessly_h"/>
                             </GroupBox>
@@ -472,98 +546,96 @@
                             <GroupBox Header="battery_work_duration">
                                 <TextBox Text="{Binding battery_work_duration, UpdateSourceTrigger=PropertyChanged}" Name="battery_work_duration"/>
                             </GroupBox>
-                        </StackPanel>
+                        </WrapPanel>
                     </GroupBox>
 
-                    <StackPanel>
-                        <GroupBox Header="dimensions">
-                            <StackPanel>
-                                <GroupBox Header="dimensions_height">
-                                    <TextBox Text="{Binding dimensions_height, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_height"/>
-                                </GroupBox>
-                                
-                                <GroupBox Header="dimensions_width">
-                                    <TextBox Text="{Binding dimensions_width, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_width"/>
-                                </GroupBox>
-                                
-                                <GroupBox Header="dimensions_thickness">
-                                    <TextBox Text="{Binding dimensions_thickness, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_thickness"/>
-                                </GroupBox>
-                                
-                                <GroupBox Header="dimensions_weight">
-                                    <TextBox Text="{Binding dimensions_weight, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_weight"/>
-                                </GroupBox>
-                            </StackPanel>
-                        </GroupBox>
+                    <GroupBox Header="dimensions">
+                        <WrapPanel>
+                            <GroupBox Header="dimensions_height">
+                                <TextBox Text="{Binding dimensions_height, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_height"/>
+                            </GroupBox>
 
-                        <GroupBox Header="other">
-                            <StackPanel>
-                                <GroupBox Header="other_producer_code">
-                                    <TextBox Text="{Binding other_producer_code, UpdateSourceTrigger=PropertyChanged}" Name="other_producer_code"/>
-                                </GroupBox>
-                                
-                                <GroupBox Header="other_producer_id">
-                                    <ComboBox SelectedValuePath="producer_id" Name="other_producer_id"
+                            <GroupBox Header="dimensions_width">
+                                <TextBox Text="{Binding dimensions_width, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_width"/>
+                            </GroupBox>
+
+                            <GroupBox Header="dimensions_thickness">
+                                <TextBox Text="{Binding dimensions_thickness, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_thickness"/>
+                            </GroupBox>
+
+                            <GroupBox Header="dimensions_weight">
+                                <TextBox Text="{Binding dimensions_weight, UpdateSourceTrigger=PropertyChanged}" Name="dimensions_weight"/>
+                            </GroupBox>
+                        </WrapPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="other">
+                        <WrapPanel>
+                            <GroupBox Header="other_producer_code">
+                                <TextBox Text="{Binding other_producer_code, UpdateSourceTrigger=PropertyChanged}" Name="other_producer_code"/>
+                            </GroupBox>
+
+                            <GroupBox Header="other_producer_id">
+                                <ComboBox SelectedValuePath="producer_id" Name="other_producer_id"
                                               DisplayMemberPath="name"
                                               SelectedValue="{Binding other_producer_id, UpdateSourceTrigger=PropertyChanged}"
                                               ItemsSource="{Binding producer_list, ElementName=LayoutRoot, UpdateSourceTrigger=PropertyChanged}"/>
-                                </GroupBox>
-                                
-                                <GroupBox Header="other_guarantee_period">
-                                    <TextBox Text="{Binding other_guarantee_period, UpdateSourceTrigger=PropertyChanged}" Name="other_guarantee_period"/>
-                                </GroupBox>
-                            </StackPanel>
-                        </GroupBox>
+                            </GroupBox>
 
-                        <GroupBox Header="software">
-                            <GroupBox Header="software_os_id">
-                                <ComboBox SelectedValuePath="os_id" Name="software_os_id"
+                            <GroupBox Header="other_guarantee_period">
+                                <TextBox Text="{Binding other_guarantee_period, UpdateSourceTrigger=PropertyChanged}" Name="other_guarantee_period"/>
+                            </GroupBox>
+                        </WrapPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="software">
+                        <GroupBox Header="software_os_id">
+                            <ComboBox SelectedValuePath="os_id" Name="software_os_id"
                                               DisplayMemberPath="name"
                                               SelectedValue="{Binding software_os_id}"
                                               ItemsSource="{Binding os_list, ElementName=LayoutRoot, UpdateSourceTrigger=PropertyChanged}"/>
-                            </GroupBox>
                         </GroupBox>
-                    </StackPanel>
+                    </GroupBox>
                 </WrapPanel>
 
                 <Label Content="comments"/>
-                <ItemsControl ItemsSource="{Binding comments, ElementName=LayoutRoot}">
+                <ItemsControl ItemsSource="{Binding comments, ElementName=LayoutRoot}" HorizontalAlignment="Center">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <GroupBox>
+                            <GroupBox MaxWidth="400">
                                 <StackPanel>
                                     <!--<GroupBox Header="{Binding comment_id, StringFormat=$comment_{0}}"/>-->
 
-                                    <GroupBox Header="plus">
-                                        <TextBox Text="{Binding plus_text, UpdateSourceTrigger=PropertyChanged}" Name="plus_text"/>
+                                    <GroupBox Header="plus" Width="Auto">
+                                        <TextBox Text="{Binding obj.plus_text, UpdateSourceTrigger=PropertyChanged}" Name="plus_text"/>
                                     </GroupBox>
-                                    
-                                    <GroupBox Header="minus">
-                                        <TextBox Text="{Binding minus_text, UpdateSourceTrigger=PropertyChanged}" Name="minus_text"/>
+
+                                    <GroupBox Header="minus" Width="Auto">
+                                        <TextBox Text="{Binding obj.minus_text, UpdateSourceTrigger=PropertyChanged}" Name="minus_text"/>
                                     </GroupBox>
-                                    
-                                    <GroupBox Header="review">
-                                        <TextBox Text="{Binding review_text, UpdateSourceTrigger=PropertyChanged}" Name="review_text"/>
+
+                                    <GroupBox Header="review" Width="Auto">
+                                        <TextBox Text="{Binding obj.review_text, UpdateSourceTrigger=PropertyChanged}" Name="review_text"/>
                                     </GroupBox>
-                                    
+
                                     <GroupBox Header="screen_rate">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding screen_rate}"/>
-                                            <Slider Value="{Binding screen_rate, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBlock Text="{Binding obj.screen_rate}"/>
+                                            <Slider Value="{Binding obj.screen_rate, UpdateSourceTrigger=PropertyChanged}"
                                                     Minimum="0" Maximum="10" Width="200" Name="screen_rate"/>
                                         </StackPanel>
                                     </GroupBox>
                                     <GroupBox Header="power_rate">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding power_rate}"/>
-                                            <Slider Value="{Binding power_rate, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBlock Text="{Binding obj.power_rate}"/>
+                                            <Slider Value="{Binding obj.power_rate, UpdateSourceTrigger=PropertyChanged}"
                                                     Minimum="0" Maximum="10" Width="200" Name="power_rate"/>
                                         </StackPanel>
                                     </GroupBox>
                                     <GroupBox Header="work_duration_rate">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding work_duration_rate}"/>
-                                            <Slider Value="{Binding work_duration_rate, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBlock Text="{Binding obj.work_duration_rate}"/>
+                                            <Slider Value="{Binding obj.work_duration_rate, UpdateSourceTrigger=PropertyChanged}"
                                                     Minimum="0" Maximum="10" Width="200" Name="work_duration_rate"/>
                                         </StackPanel>
                                     </GroupBox>
@@ -571,6 +643,11 @@
                             </GroupBox>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
                 </ItemsControl>
             </StackPanel>
         </ScrollViewer>

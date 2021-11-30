@@ -33,15 +33,6 @@ namespace myStore.myPages
             }
         }
 
-        private DataState current_state = DataState.Empty;
-
-        private enum DataState
-        {
-            Empty = 0,
-            DataLoaded = 1,
-            DictionariesLoaded = 2
-        }
-
 
 
 
@@ -54,7 +45,7 @@ namespace myStore.myPages
         public ObservableCollection<string> List_interfaces_wifi { get; set; } = new ObservableCollection<string>();
         public ObservableCollection<string> List_interfaces_memory_cards { get; set; } = new ObservableCollection<string>();
 
-        public ObservableCollection<Comment> comments { get; set; } = new ObservableCollection<Comment>();
+        public ObservableCollection<VerifieldObject<Comment>> comments { get; set; } = new ObservableCollection<VerifieldObject<Comment>>();
 
 
 
@@ -73,76 +64,76 @@ namespace myStore.myPages
             }
         }
 
-        public RelayCommand ComboboxSelectionChangedCommand { get; }
-
+        public RelayCommand EditCommand { get; }
         public RelayCommand OpenMainMenuCommand { get; }
         public RelayCommand SaveChangesCommand { get; }
         public RelayCommand RemoveNotebookCommand { get; }
         public RelayCommand CancelChangesCommand { get; }
 
-        private delegate void UpdateStateEventHandler(DataState state);
-        private event UpdateStateEventHandler UpdateStateEvent;
-
-        private void bindDictionaries()
-        {
-            //cpu = cpu_list.Where(el => el.cpu_id == notebook.cpu_id).First();
-            //gpu = gpu_list.Where(el => el.gpu_id == notebook.gpu_id).First();
-        }
 
         public NotebookPage(int ID = -1, int page = 0)
         {
-            ComboboxSelectionChangedCommand = new RelayCommand(
-                objs =>
-                {
-                    var vals = (object[])objs;
-
-                    var old_val = vals[0];
-                    var cm = vals[1] as ComboBox;
-
-                    if (cm.SelectedValue == null)
-                        cm.SelectedValue = old_val;
-                });
-
-            UpdateStateEvent += state =>
-            {
-                if (state == DataState.Empty) current_state = DataState.Empty;
-                else {
-                    current_state ^= state;
-
-                    if (current_state.HasFlag(DataState.DataLoaded) && current_state.HasFlag(DataState.DictionariesLoaded))
-                        bindDictionaries();
-                }
-            };
+            EditCommand = new RelayCommand(
+                _ => isEditable = true,
+                _ => !isEditable
+                );
 
             OpenMainMenuCommand = new RelayCommand(_ => Ready2OpenMainMenuEvent(page));
 
-            CancelChangesCommand = new RelayCommand(_ =>
-            {
-                UpdateStateEvent(DataState.Empty);
-                comments.Clear();
-
-                LoadNotebook(ID);
-                LoadComments(ID);
-                LoadDictionaries();
-            },
-            _ => ID > 0
+            CancelChangesCommand = new RelayCommand(
+                async _ =>
+                {
+                    isEditable = false;
+                    vNotebook.Reload();
+                    foreach (var c in comments) c.Reload();
+                    OnPropertyChanged("notebook");
+                },
+                _ => isEditable && ID > 0
             );
 
-            SaveChangesCommand = new RelayCommand(_ =>
-            {
-                
-            });
+            SaveChangesCommand = new RelayCommand(
+                async _ =>
+                {
+                    isEditable = false;
 
-            RemoveNotebookCommand = new RelayCommand(_ =>
-            {
+                    {
+                        var changes = vNotebook.GetAndSaveChanges();
+                        if (changes.Count > 0)
+                        {
+                            var sql_template = $"UPDATE notebooks SET {{0}} WHERE notebook_id = {ID}";
+                            Database.Execute(sql_template, changes);
 
-            });
+                            MessageBox.Show("Updated 1!!!");
+                        }
+                    }
+
+                    foreach (var comment in comments)
+                    {
+                        var changes = comment.GetAndSaveChanges();
+                        if (changes.Count > 0)
+                        {
+                            var sql_template = $"UPDATE comments SET {{0}} WHERE comment_id = {comment.obj.comment_id}";
+                            Database.Execute(sql_template, changes);
+
+                            MessageBox.Show("Updated 2!!!");
+                        }
+                    }
+                },
+            _ => isEditable
+            );
+
+            RemoveNotebookCommand = new RelayCommand(
+                _ => Database.Execute($"DELETE FROM notebooks WHERE notebook_id = {ID}"),
+                _ => isEditable
+            );
 
             InitializeComponent();
 
             if (ID > 0)
             {
-                CancelChangesCommand.Execute(1);
+                LoadNotebook(ID);
+                LoadComments(ID);
+                LoadDictionaries();
             }
         }
 
@@ -153,7 +144,7 @@ namespace myStore.myPages
             {
                 List_interfaces_wifi.Clear();
                 sql = $"SELECT DISTINCT unnest(interfaces_wifi) FROM notebooks";
-                await foreach (var el in Database.EnumerateList<string>(sql))
+                await foreach (var el in Database.SimpleEnumerate<string>(sql))
                 {
                     List_interfaces_wifi.Add(el);
                 }
@@ -162,7 +153,7 @@ namespace myStore.myPages
             {
                 List_interfaces_memory_cards.Clear();
                 sql = $"SELECT DISTINCT unnest(interfaces_memory_cards) FROM notebooks";
-                await foreach (var el in Database.EnumerateList<string>(sql))
+                await foreach (var el in Database.SimpleEnumerate<string>(sql))
                 {
                     List_interfaces_memory_cards.Add(el);
                 }
@@ -205,15 +196,12 @@ namespace myStore.myPages
                     gpu_list.Add(el);
                 }
             }
-
-            UpdateStateEvent(DataState.DictionariesLoaded);
         }
         private async void LoadNotebook(int ID)
         {
             var sql = $"SELECT * FROM notebooks WHERE notebook_id = {ID}";
-            notebook = await Database.GetObject<Notebook>(sql);
-
-            UpdateStateEvent(DataState.DataLoaded);
+            vNotebook.Load(await Database.GetObject<Notebook>(sql));
+            OnPropertyChanged("notebook");
         }
         private async void LoadComments(int ID)
         {
@@ -221,7 +209,7 @@ namespace myStore.myPages
 
             await foreach (var c in Database.Enumerate<Comment>(sql))
             {
-                comments.Add(c);
+                comments.Add(new VerifieldObject<Comment>(c));
             }
         }
 

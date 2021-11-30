@@ -1,5 +1,7 @@
 ﻿using FastMember;
 using System;
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -529,7 +531,7 @@ namespace myStore.entities
             }
             set
             {
-                string[] elements = (string[])value;
+                string[] elements = (value as IEnumerable).Cast<string>().ToArray();
                 foreach (var el in elements)
                 {
                     _interfaces_wifi.Add(el);
@@ -556,7 +558,7 @@ namespace myStore.entities
             }
             set
             {
-                string[] elements = (string[])value;
+                string[] elements = (value as IEnumerable).Cast<string>().ToArray();
                 foreach (var el in elements)
                 {
                     _interfaces_memory_cards.Add(el);
@@ -813,6 +815,7 @@ namespace myStore.entities
         {
             Notebook clone = (Notebook)this.MemberwiseClone();
 
+            //clone._image = new List<byte>(this._image).ToArray();
             clone._interfaces_wifi = new ObservableCollection<string>(this._interfaces_wifi);
             clone._interfaces_memory_cards = new ObservableCollection<string>(this._interfaces_memory_cards);
 

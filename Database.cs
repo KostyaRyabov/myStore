@@ -38,7 +38,7 @@ namespace myStore
             }
         }
 
-        public static async IAsyncEnumerable<T> EnumerateList<T>(string sql) where T : class
+        public static async IAsyncEnumerable<T> SimpleEnumerate<T>(string sql) where T : class
         {
             using (var connection = new NpgsqlConnection(connection_string))
             {
@@ -59,7 +59,7 @@ namespace myStore
 
         public static async Task<T> GetObject<T>(string sql) where T : class, new()
         {
-            T obj = null;
+            T result = null;
 
             using (var connection = new NpgsqlConnection(connection_string))
             {
@@ -70,14 +70,51 @@ namespace myStore
                     using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
                     {
-                        obj = reader.ConvertToObject<T>();
+                        result = reader.ConvertToObject<T>();
                     }
                 }
 
                 await connection.CloseAsync();
             }
 
-            return obj;
+            return result;
+        }
+
+        public static async void Execute(string sql)
+        {
+            using (var connection = new NpgsqlConnection(connection_string))
+            {
+                await connection.OpenAsync();
+
+                using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
+                {
+                    await command.ExecuteNonQueryAsync();
+                }
+
+                await connection.CloseAsync();
+            }
+        }
+
+        public static async void Execute(string sql, Dictionary<string, object> parameters)
+        {
+            using (var connection = new NpgsqlConnection(connection_string))
+            {
+                await connection.OpenAsync();
+
+                sql = String.Format(sql, String.Join(", ", parameters.Select(item => $"{item.Key} = :{item.Key}")));
+
+                using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
+                {
+                    foreach(var p in parameters)
+                    {
+                        command.Parameters.AddWithValue(p.Key, p.Value);
+                    }
+
+                    await command.ExecuteNonQueryAsync();
+                }
+
+                await connection.CloseAsync();
+            }
         }
 
         public static T ConvertToObject<T>(this NpgsqlDataReader rd) where T : class, new()
