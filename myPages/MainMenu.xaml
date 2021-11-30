@@ -6,12 +6,8 @@
         xmlns:local="clr-namespace:myStore.myPages;assembly=myStore"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        xmlns:converters="clr-namespace:myStore.converters"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         DataContext="{Binding RelativeSource={RelativeSource Self}}" x:Name="LayoutRoot">
-    <UserControl.Resources>
-        <converters:MultipleCommandParameters x:Key="MultipleCommandParameters"/>
-    </UserControl.Resources>
     <Grid ScrollViewer.HorizontalScrollBarVisibility="Auto">
         <Grid.RowDefinitions>
             <RowDefinition Height="0.02*"/>

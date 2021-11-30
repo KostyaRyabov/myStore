@@ -13,7 +13,7 @@ namespace myStore.entities
     public class Notebook : INotifyPropertyChanged, ICloneable
     {
         private int? _notebook_id;
-        private int _price;
+        private int? _price;
         private string _name;
         private short? _display_max_frequency_hz;
         private decimal? _display_diagonal;
@@ -24,9 +24,9 @@ namespace myStore.entities
         private string _display_screen_backlight_type;
         private short? _display_brightness;
 
-        private short? _cpu_id;
+        private int? _cpu_id;
 
-        private short? _gpu_id;
+        private int? _gpu_id;
 
         private string _memory_drive_type;
         private string _memory_ram_type;
@@ -78,11 +78,11 @@ namespace myStore.entities
         private short? _dimensions_weight;
 
         private string _other_producer_code;
-        private int _other_producer_id;
+        private int? _other_producer_id;
 
         private string _other_guarantee_period;
 
-        private int _software_os_id;
+        private int? _software_os_id;
 
         private byte[] _image;
 
@@ -101,7 +101,7 @@ namespace myStore.entities
                 OnPropertyChanged("notebook_id");
             }
         }
-        public int price
+        public int? price
         {
             get
             {
@@ -209,7 +209,7 @@ namespace myStore.entities
                 OnPropertyChanged("display_brightness");
             }
         }
-        public short? cpu_id
+        public int? cpu_id
         {
             get
             {
@@ -221,7 +221,7 @@ namespace myStore.entities
                 OnPropertyChanged("cpu_id");
             }
         }
-        public short? gpu_id
+        public int? gpu_id
         {
             get
             {
@@ -755,7 +755,7 @@ namespace myStore.entities
                 OnPropertyChanged("other_producer_code");
             }
         }
-        public int other_producer_id
+        public int? other_producer_id
         {
             get
             {
@@ -779,7 +779,7 @@ namespace myStore.entities
                 OnPropertyChanged("other_guarantee_period");
             }
         }
-        public int software_os_id
+        public int? software_os_id
         {
             get
             {
@@ -820,11 +820,5 @@ namespace myStore.entities
         }
 
         public void OnPropertyChanged([CallerMemberName] string prop = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-
-
-        public object this[string fieldName] {
-            get => TypeAccessor.Create(typeof(Notebook))[this, fieldName];
-            set => TypeAccessor.Create(typeof(Notebook))[this, fieldName] = value;
-        }
     }
 }

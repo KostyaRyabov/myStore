@@ -22,7 +22,7 @@ namespace myStore
 
         public void OpenNotebookPage(int ID)
         {
-            var page = new myPages.NotebookPage(ID);
+            var page = new myPages.NotebookPage(ID, (Content as myPages.MainMenu).CurPage);
             Content = page;
 
             page.Ready2OpenMainMenuEvent += OpenMainPage;
