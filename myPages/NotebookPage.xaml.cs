@@ -1,19 +1,10 @@
-﻿
-using FastMember;
-using myStore.entities;
+﻿using myStore.entities;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Drawing;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Linq;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Media;
-using System.Windows.Threading;
 
 namespace myStore.myPages
 {
@@ -22,7 +13,7 @@ namespace myStore.myPages
         public delegate void Ready2OpenNotebookEventHandler(int ID);
         public event Ready2OpenNotebookEventHandler Ready2OpenMainMenuEvent;
 
-        private VerifieldObject<Notebook> vNotebook = new VerifieldObject<Notebook>();
+        private VerifyObject<Notebook> vNotebook = new VerifyObject<Notebook>();
         public Notebook notebook {
             get {
                 return vNotebook.obj;
@@ -45,7 +36,8 @@ namespace myStore.myPages
         public ObservableCollection<string> List_interfaces_wifi { get; set; } = new ObservableCollection<string>();
         public ObservableCollection<string> List_interfaces_memory_cards { get; set; } = new ObservableCollection<string>();
 
-        public ObservableCollection<VerifieldObject<Comment>> comments { get; set; } = new ObservableCollection<VerifieldObject<Comment>>();
+        public ObservableCollection<VerifyObject<Comment>> comments { get; set; } = new ObservableCollection<VerifyObject<Comment>>();
+        public ObservableCollection<Comment> new_comments { get; set; } = new ObservableCollection<Comment>();
 
 
 
@@ -69,10 +61,18 @@ namespace myStore.myPages
         public RelayCommand SaveChangesCommand { get; }
         public RelayCommand RemoveNotebookCommand { get; }
         public RelayCommand CancelChangesCommand { get; }
+        public RelayCommand CreateCommentCommand { get; }
+        
 
+        
 
         public NotebookPage(int ID = -1, int page = 0)
         {
+            CreateCommentCommand = new RelayCommand(
+                _ => new_comments.Add(new Comment(ID)),
+                _ => isEditable
+                );
+
             EditCommand = new RelayCommand(
                 _ => isEditable = true,
                 _ => !isEditable
@@ -101,29 +101,46 @@ namespace myStore.myPages
                         if (changes.Count > 0)
                         {
                             var sql_template = $"UPDATE notebooks SET {{0}} WHERE notebook_id = {ID}";
-                            Database.Execute(sql_template, changes);
+                            Database.ExecuteOne(sql_template, changes);
 
-                            MessageBox.Show("Updated 1!!!");
+                            List_interfaces_wifi.Update("interfaces_wifi", changes);
+                            List_interfaces_memory_cards.Update("interfaces_memory_cards", changes);
                         }
                     }
 
                     foreach (var comment in comments)
                     {
                         var changes = comment.GetAndSaveChanges();
+
                         if (changes.Count > 0)
                         {
                             var sql_template = $"UPDATE comments SET {{0}} WHERE comment_id = {comment.obj.comment_id}";
-                            Database.Execute(sql_template, changes);
-
-                            MessageBox.Show("Updated 2!!!");
+                            Database.ExecuteOne(sql_template, changes);
                         }
+                    }
+
+                    if (new_comments.Count > 0)
+                    {
+                        foreach (var c in new_comments.Reverse())
+                        {
+                            comments.Insert(0, new VerifyObject<Comment>(c));
+                        }
+
+                        var ignore_members = new string[] { "comment_id" };
+
+                        Database.Insert("comments", new_comments, ignore_members);
+
+                        new_comments.Clear();
                     }
                 },
             _ => isEditable
             );
 
             RemoveNotebookCommand = new RelayCommand(
-                _ => Database.Execute($"DELETE FROM notebooks WHERE notebook_id = {ID}"),
+                _ => {
+                    Database.ExecuteOne($"DELETE FROM notebooks WHERE notebook_id = {ID}");
+                    Ready2OpenMainMenuEvent(page);
+                },
                 _ => isEditable
             );
 
@@ -209,7 +226,7 @@ namespace myStore.myPages
 
             await foreach (var c in Database.Enumerate<Comment>(sql))
             {
-                comments.Add(new VerifieldObject<Comment>(c));
+                comments.Add(new VerifyObject<Comment>(c));
             }
         }
 

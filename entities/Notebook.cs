@@ -1,18 +1,12 @@
-﻿using FastMember;
-using System;
+﻿using System;
 using System.Linq;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Drawing;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Windows.Media.Imaging;
 
 namespace myStore.entities
 {
-    public class Notebook : INotifyPropertyChanged, ICloneable
+    public class Notebook : Accessored<Notebook>, INotifyPropertyChanged, ICloneable
     {
         private int? _notebook_id;
         private int? _price;
@@ -88,9 +82,7 @@ namespace myStore.entities
 
         private byte[] _image;
 
-
-
-
+        
         public int? notebook_id
         {
             get
@@ -821,6 +813,7 @@ namespace myStore.entities
 
             return clone;
         }
+
 
         public void OnPropertyChanged([CallerMemberName] string prop = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
     }

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace myStore.entities
 {
-    public class NotebookView : INotifyPropertyChanged
+    public class NotebookView : Accessored<NotebookView>, INotifyPropertyChanged
     {
         public int notebook_id { get; set; }
         public int price { get; set; }

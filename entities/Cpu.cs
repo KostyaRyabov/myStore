@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace myStore.entities
 {
-    public class Cpu : INotifyPropertyChanged
+    public class Cpu : Accessored<Cpu>, INotifyPropertyChanged
     {
         private int _cpu_id;
         private string _processor;

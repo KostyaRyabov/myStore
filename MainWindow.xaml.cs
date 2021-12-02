@@ -1,13 +1,12 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
 
 namespace myStore
 {
-    public partial class MainWindow : Window
+	public partial class MainWindow : Window
     {
         public MainWindow()
         {
-            InitializeComponent();
+			InitializeComponent();
 
             OpenMainPage();
         }

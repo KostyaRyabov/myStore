@@ -4,9 +4,10 @@ using System.Runtime.CompilerServices;
 
 namespace myStore.entities
 {
-    public class Comment : INotifyPropertyChanged, ICloneable
+    public class Comment : Accessored<Comment>, INotifyPropertyChanged, ICloneable
     {
-        public int comment_id;
+        public int comment_id { get; set; }
+        public int notebook_id { get; set; }
 
         private string _plus_text;
         private string _minus_text;
@@ -16,6 +17,9 @@ namespace myStore.entities
         private short _power_rate;
         private short _work_duration_rate;
 
+
+        public Comment() { }
+        public Comment(int notebook_id) => this.notebook_id = notebook_id;
 
 
         public string plus_text

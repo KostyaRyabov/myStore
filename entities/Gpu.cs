@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace myStore.entities
 {
-    public class Gpu : INotifyPropertyChanged
+    public class Gpu : Accessored<Gpu>, INotifyPropertyChanged
     {
         private int _gpu_id;
         private string _video_adapter;

@@ -2,8 +2,6 @@
 using System.Data;
 using System.Collections.Generic;
 using System.Configuration;
-using myStore.entities;
-using FastMember;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +17,7 @@ namespace myStore
     {
         private static string connection_string = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
         
-        public static async IAsyncEnumerable<T> Enumerate<T>(string sql) where T : class, new()
+        public static async IAsyncEnumerable<T> Enumerate<T>(string sql) where T : Accessored<T>, new()
         {
             using (var connection = new NpgsqlConnection(connection_string))
             {
@@ -57,7 +55,7 @@ namespace myStore
             }
         }
 
-        public static async Task<T> GetObject<T>(string sql) where T : class, new()
+        public static async Task<T> GetObject<T>(string sql) where T : Accessored<T>, new()
         {
             T result = null;
 
@@ -80,34 +78,25 @@ namespace myStore
             return result;
         }
 
-        public static async void Execute(string sql)
+        public static async void ExecuteOne(string sql, Dictionary<string, object> parameters = null, Tuple<string, object> binding = null)
         {
             using (var connection = new NpgsqlConnection(connection_string))
             {
                 await connection.OpenAsync();
 
-                using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
+                if (parameters != null)
                 {
-                    await command.ExecuteNonQueryAsync();
+                    sql = String.Format(sql, String.Join(", ", parameters.Select(item => $"{item.Key} = :{item.Key}")));
                 }
 
-                await connection.CloseAsync();
-            }
-        }
-
-        public static async void Execute(string sql, Dictionary<string, object> parameters)
-        {
-            using (var connection = new NpgsqlConnection(connection_string))
-            {
-                await connection.OpenAsync();
-
-                sql = String.Format(sql, String.Join(", ", parameters.Select(item => $"{item.Key} = :{item.Key}")));
-
                 using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
                 {
-                    foreach(var p in parameters)
+                    if (parameters != null)
                     {
-                        command.Parameters.AddWithValue(p.Key, p.Value);
+                        foreach (var p in parameters)
+                        {
+                            command.Parameters.AddWithValue(p.Key, p.Value);
+                        }
                     }
 
                     await command.ExecuteNonQueryAsync();
@@ -117,21 +106,51 @@ namespace myStore
             }
         }
 
-        public static T ConvertToObject<T>(this NpgsqlDataReader rd) where T : class, new()
+        public static async void Insert<T>(string tableName, IEnumerable<T> values, string[] ignore_members) where T : Accessored<T>
         {
-            Type type = typeof(T);
-            TypeAccessor accessor = TypeAccessor.Create(type);
-            MemberSet members = accessor.GetMembers();
+            using (var connection = new NpgsqlConnection(connection_string))
+            {
+                await connection.OpenAsync();
+
+
+                var fieldNames = Accessored<T>.fieldNames().Where(fn => !ignore_members.Contains(fn));
+                var header_template = String.Join(", ", fieldNames);
+                var values_template = String.Join(", ", fieldNames.Select(h => $":{h}{{0}}")); // {{0}} - row indicator
+                var enumerated_values_template = Enumerable.Range(0, values.Count()).Select(i => $"({String.Format(values_template, i)})");
+                var values_pattern = String.Join(", ", enumerated_values_template);
+
+                var sql = $"INSERT INTO {tableName}({header_template}) VALUES {values_pattern}";
+
+                using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
+                {
+                    for (int i = 0; i < values.Count(); i++)
+                    {
+                        foreach (var fn in fieldNames)
+                        {
+                            command.Parameters.AddWithValue($"{fn}{i}", values.ElementAt(i)[fn] ?? DBNull.Value);
+                        }
+                    }
+
+                    await command.ExecuteNonQueryAsync();
+                }
+
+                await connection.CloseAsync();
+            }
+        }
+
+        public static T ConvertToObject<T>(this NpgsqlDataReader rd) where T : Accessored<T>, new()
+        {
+            var fieldNames = Accessored<T>.fieldNames();
             T t = new T();
 
             for (int i = 0; i < rd.FieldCount; i++)
             {
                 string fieldName = rd.GetName(i);
 
-                if (members.Any(m => string.Equals(m.Name, fieldName, StringComparison.OrdinalIgnoreCase)))
+                if (fieldNames.Any(m => string.Equals(m, fieldName, StringComparison.OrdinalIgnoreCase)))
                 {
-                    if (rd.IsDBNull(i)) accessor[t, fieldName] = null;
-                    else accessor[t, fieldName] = rd.GetValue(i);
+                    if (rd.IsDBNull(i)) t[fieldName] = null;
+                    else t[fieldName] = rd.GetValue(i);
                 }
             }
 

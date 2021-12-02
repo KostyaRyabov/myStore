@@ -598,7 +598,68 @@
                     </GroupBox>
                 </WrapPanel>
 
-                <Label Content="comments"/>
+                <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft">
+                    <Label Content="comments"/>
+                    <Button Command="{Binding CreateCommentCommand, ElementName=LayoutRoot}" Content="+">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding new_comments, ElementName=LayoutRoot}" HorizontalAlignment="Center">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <GroupBox MaxWidth="400">
+                                <StackPanel>
+                                    <GroupBox Header="plus" Width="Auto">
+                                        <TextBox Text="{Binding plus_text, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </GroupBox>
+
+                                    <GroupBox Header="minus" Width="Auto">
+                                        <TextBox Text="{Binding minus_text, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </GroupBox>
+
+                                    <GroupBox Header="review" Width="Auto">
+                                        <TextBox Text="{Binding review_text, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </GroupBox>
+
+                                    <GroupBox Header="screen_rate">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding screen_rate}"/>
+                                            <Slider Value="{Binding screen_rate, UpdateSourceTrigger=PropertyChanged}"
+                                                    Minimum="0" Maximum="10" Width="200"/>
+                                        </StackPanel>
+                                    </GroupBox>
+                                    <GroupBox Header="power_rate">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding power_rate}"/>
+                                            <Slider Value="{Binding power_rate, UpdateSourceTrigger=PropertyChanged}"
+                                                    Minimum="0" Maximum="10" Width="200"/>
+                                        </StackPanel>
+                                    </GroupBox>
+                                    <GroupBox Header="work_duration_rate">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding work_duration_rate}"/>
+                                            <Slider Value="{Binding work_duration_rate, UpdateSourceTrigger=PropertyChanged}"
+                                                    Minimum="0" Maximum="10" Width="200"/>
+                                        </StackPanel>
+                                    </GroupBox>
+                                </StackPanel>
+                            </GroupBox>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
                 <ItemsControl ItemsSource="{Binding comments, ElementName=LayoutRoot}" HorizontalAlignment="Center">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>

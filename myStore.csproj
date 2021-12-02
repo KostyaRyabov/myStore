@@ -278,13 +278,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Accessored.cs" />
     <Compile Include="converters\LessThen.cs" />
     <Compile Include="converters\MultipleCommandParameters.cs" />
     <Compile Include="DependancySearcher.cs" />
     <Compile Include="entities\Comment.cs" />
     <Compile Include="entities\Cpu.cs" />
     <Compile Include="entities\Gpu.cs" />
-    <Compile Include="entities\Item.cs" />
     <Compile Include="entities\OS.cs" />
     <Compile Include="entities\Producer.cs" />
     <Compile Include="myLookUpContract.cs" />
@@ -295,8 +295,9 @@
       <DependentUpon>MainMenu.xaml</DependentUpon>
     </Compile>
     <Compile Include="entities\Notebook.cs" />
+    <Compile Include="ObjectExtention.cs" />
     <Compile Include="RelayCommand.cs" />
-    <Compile Include="VerifieldObject.cs" />
+    <Compile Include="VerifyObject.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

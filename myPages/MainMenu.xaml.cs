@@ -1,15 +1,10 @@
 ﻿using myStore.entities;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Media;
 
 namespace myStore.myPages
 {
@@ -64,8 +59,11 @@ namespace myStore.myPages
             RemoveCommand = new RelayCommand(
                 _ =>
                 {
-                    notebooks.Where(n => n.Removable).ToList().ForEach(n => notebooks.Remove(n));
-                    IsRemovable = false;
+                    var IDs = notebooks.Where(n => n.Removable).Select(n => n.notebook_id);
+
+                    Database.ExecuteOne($"DELETE FROM notebooks WHERE notebook_id IN ({ String.Join(", ", IDs) })");
+
+                    ChangePageCommand.Execute(0);
                 },
                 _ => IsRemovable && notebooks.Count(n => n.Removable) > 0
             );
