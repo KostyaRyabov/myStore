@@ -3,12 +3,21 @@ using System.Linq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Collections;
+using System.Collections.Generic;
+using System.Windows;
+using System.Drawing;
+using System.Windows.Media.Imaging;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.IO;
+using myStore.converters;
 
 namespace myStore.entities
 {
     public class Notebook : Accessored<Notebook>, INotifyPropertyChanged, ICloneable
     {
-        private int? _notebook_id;
+        private int _notebook_id;
         private int? _price;
         private string _name;
         private short? _display_max_frequency_hz;
@@ -83,7 +92,7 @@ namespace myStore.entities
         private byte[] _image;
 
         
-        public int? notebook_id
+        public int notebook_id
         {
             get
             {
@@ -515,6 +524,7 @@ namespace myStore.entities
                 OnPropertyChanged("interfaces_bluetooth");
             }
         }
+
         public object interfaces_wifi
         {
             get
@@ -523,13 +533,27 @@ namespace myStore.entities
             }
             set
             {
-                string[] elements = (value as IEnumerable).Cast<string>().ToArray();
-                foreach (var el in elements)
-                {
-                    _interfaces_wifi.Add(el);
+                if (value is IEnumerable<string> enumerable){
+                    foreach (var el in enumerable)
+                    {
+                        if (!_interfaces_wifi.Contains(el))
+                        {
+                            _interfaces_wifi.Add(el);
+                        }
+                    }
                 }
+                else if (value is string el)
+                {
+                    if (!_interfaces_wifi.Contains(el))
+                    {
+                        _interfaces_wifi.Add(el);
+                    }
+                }
+
+                OnPropertyChanged("interfaces_wifi");
             }
         }
+
         public string interfaces_headphone_microphone_jack
         {
             get
@@ -550,11 +574,25 @@ namespace myStore.entities
             }
             set
             {
-                string[] elements = (value as IEnumerable).Cast<string>().ToArray();
-                foreach (var el in elements)
+                if (value is IEnumerable<string> enumerable)
                 {
-                    _interfaces_memory_cards.Add(el);
+                    foreach (var el in enumerable)
+                    {
+                        if (!_interfaces_memory_cards.Contains(el))
+                        {
+                            _interfaces_memory_cards.Add(el);
+                        }
+                    }
                 }
+                else if (value is string el)
+                {
+                    if (!_interfaces_memory_cards.Contains(el))
+                    {
+                        _interfaces_memory_cards.Add(el);
+                    }
+                }
+
+                OnPropertyChanged("interfaces_memory_cards");
             }
         }
         public bool? interfaces_embedded_card_reader
@@ -785,7 +823,7 @@ namespace myStore.entities
                 OnPropertyChanged("software_os_id");
             }
         }
-        public byte[] image
+        public object image
         {
             get
             {
@@ -794,20 +832,30 @@ namespace myStore.entities
             }
             set
             {
-                _image = value;
+                if (value is byte[] byte_array)
+                {
+                    _image = byte_array;
+                }
+                else if (value is BitmapSource bitmap_source)
+                {
+                    _image = ImageConvertor.BmpSource2bArray(bitmap_source);
+                }
+                else if (value is null)
+                {
+                    _image = null;
+                }
+
                 OnPropertyChanged("image");
             }
         }
 
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public object Clone()
         {
             Notebook clone = (Notebook)this.MemberwiseClone();
 
             //clone._image = new List<byte>(this._image).ToArray();
+
             clone._interfaces_wifi = new ObservableCollection<string>(this._interfaces_wifi);
             clone._interfaces_memory_cards = new ObservableCollection<string>(this._interfaces_memory_cards);
 
@@ -815,6 +863,7 @@ namespace myStore.entities
         }
 
 
+        public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string prop = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
     }
 }

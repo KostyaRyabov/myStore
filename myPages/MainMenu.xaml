@@ -3,97 +3,212 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:myStore.myPages;assembly=myStore"
+        xmlns:controls="clr-namespace:myStore.src.controls.ScrollViewer"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         DataContext="{Binding RelativeSource={RelativeSource Self}}" x:Name="LayoutRoot">
-    <Grid ScrollViewer.HorizontalScrollBarVisibility="Auto">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="0.02*"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/src/styles/ContolsStyle.xaml"/>
 
-        <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft">
-            <Button Command="{Binding PrepareRemovingCommand}" Content="удалить?" x:Name="remove_button">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Style.Triggers>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-                        </Style.Triggers>
+                <ResourceDictionary>
+                    <Style TargetType="StackPanel" x:Key="SortButtons">
+                        <Setter Property="Margin" Value="0,0,20,0"/>
+
+                        <Style.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontSize" Value="14"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextAlignment" Value="Justify"/>
+                            </Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Width" Value="90"/>
+                            </Style>
+                        </Style.Resources>
                     </Style>
-                </Button.Style>
-            </Button>
-            <Button Command="{Binding RemoveCommand}" Content="подтвердить">
-                <Button.Style>
-                    <Style TargetType="Button">
+                    
+                    <Style x:Key="SelectedBorder" TargetType="Rectangle">
+                        <Setter Property="StrokeDashArray" Value="5"/>
+                        <Setter Property="StrokeThickness" Value="0"/>
+
+                        <Setter Property="Fill" Value="#22000000"/>
+                        <Setter Property="Stroke" Value="Gray"/>
+
+                        <Setter Property="Opacity" Value="0.5"/>
+
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsEnabled, ElementName=remove_button}" Value="True">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard x:Name="Ants">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Rectangle.Opacity)" To="1" Duration="0:0:0.25"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Rectangle.StrokeThickness)" To="3" Duration="0:0:0.25"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Rectangle.StrokeDashOffset)" From="30" To="0" RepeatBehavior="Forever" Duration="0:0:1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                
+                                <Trigger.ExitActions>
+                                    <RemoveStoryboard BeginStoryboardName="Ants"/>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Rectangle.Opacity)" To="0.5" Duration="0:0:0.25"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Rectangle.StrokeThickness)" To="0" Duration="0:0:0.5"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+
+                            <DataTrigger Binding="{Binding Removable}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetProperty="Fill.Color" To="#55FF0000" Duration="0:0:0.20"/>
+                                            <ColorAnimation Storyboard.TargetProperty="Stroke.Color" To="Red" Duration="0:0:0.20"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetProperty="Fill.Color" To="#22000000" Duration="0:0:0.20"/>
+                                            <ColorAnimation Storyboard.TargetProperty="Stroke.Color" To="Gray" Duration="0:0:0.20"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.ExitActions>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                </Button.Style>
-            </Button>
-            <Button Command="{Binding СancelRemovingCommand}" Content="отмена">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Style.Triggers>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-            <Button Command="{Binding ChangePageCommand}" Content="reload">
-                <Button.CommandParameter>
-                    <sys:Int32>-2</sys:Int32>
-                </Button.CommandParameter>
-            </Button>
-        </StackPanel>
-        
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" VirtualizingStackPanel.IsVirtualizing="True" Grid.Row="1" x:Name="ScrollableMenu">
-            <StackPanel>
-                <ItemsControl ItemsSource="{Binding notebooks}" Margin="20" Background="LightBlue" x:Name="gList">
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid ScrollViewer.HorizontalScrollBarVisibility="Auto">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Background="#B0B0B0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="160"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+            
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <Button Command="{Binding ChangePageCommand}">
+                    <Image Source="pack://application:,,,/src/imgs/reload.png"/>
+
+                    <Button.CommandParameter>
+                        <sys:Int32>0</sys:Int32>
+                    </Button.CommandParameter>
+                </Button>
+                <Button Command="{Binding PrepareRemovingCommand}" Style="{StaticResource On_Edition_Button}">
+                    <Image Source="pack://application:,,,/src/imgs/trash.png"/>
+                </Button>
+                <Button Command="{Binding CreateNotebookCommand}" Style="{StaticResource On_Edition_Button}">
+                    <Image Source="pack://application:,,,/src/imgs/add.png"/>
+                </Button>
+                <Button Command="{Binding СancelRemovingCommand}" Style="{StaticResource On_Edition_Button}">
+                    <Image Source="pack://application:,,,/src/imgs/cancel.png"/>
+                </Button>
+                <Button Command="{Binding RemoveCommand}" Style="{StaticResource On_Edition_Button}">
+                    <Image Source="pack://application:,,,/src/imgs/accept.png"/>
+                </Button>
+            </StackPanel>
+
+            <Grid Grid.Column="1" HorizontalAlignment="Center">
+                <Grid Background="Transparent" Width="250">
+                    <TextBox Width="250" Height="30" Padding="5" TextWrapping="NoWrap"
+                         x:Name="SearchTermTextBox"
+                         VerticalContentAlignment="Center" VerticalAlignment="Center" 
+                         HorizontalAlignment="Left" Style="{StaticResource SoftEdgesStyle}"/>
+                    <DockPanel>
+                        <DockPanel.Style>
+                            <Style TargetType="DockPanel">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=SearchTermTextBox}" Value="">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.6" Duration="00:00:0.2"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.0" Duration="00:00:0.2" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DockPanel.Style>
+
+                        <Image DockPanel.Dock="Right" Source="pack://application:,,,/src/imgs/search.png" Height="30" Margin="0,0,4,0"/>
+                        <TextBlock DockPanel.Dock="Left" IsHitTestVisible="False" Text="Pass something..." VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"/>
+                    </DockPanel>
+                </Grid>
+            </Grid>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource SortButtons}">
+                <TextBlock Text="sort:  "/>
+
+                <Button Content="{Binding sort_states[0]}" Command="{Binding ChangeSortStateCommand}" ContentStringFormat="{}{0} price ">
+                    <Button.CommandParameter>
+                        <sys:Int16>1</sys:Int16>
+                    </Button.CommandParameter>
+                </Button>
+                <Button Content="{Binding sort_states[1]}" Command="{Binding ChangeSortStateCommand}" ContentStringFormat="{}{0} rating ">
+                    <Button.CommandParameter>
+                        <sys:Int16>2</sys:Int16>
+                    </Button.CommandParameter>
+                </Button>
+                <Button Content="{Binding sort_states[2]}" Command="{Binding ChangeSortStateCommand}" ContentStringFormat="{}{0} popularity ">
+                    <Button.CommandParameter>
+                        <sys:Int16>3</sys:Int16>
+                    </Button.CommandParameter>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <controls:SmoothScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Margin="0,40,0,40"
+                                     Grid.Row="1" x:Name="ScrollableMenu" CanContentScroll="False">
+            <StackPanel HorizontalAlignment="Center">
+                <ItemsControl ItemsSource="{Binding notebooks}" x:Name="gList">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Margin="5" Width="300" Height="300">
-                                <StackPanel.Style>
-                                    <Style TargetType="StackPanel">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Removable}" Value="True">
-                                                <Setter Property="Background" Value="Red" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Removable}" Value="False">
-                                                <Setter Property="Background" Value="BurlyWood" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </StackPanel.Style>
+                            <Border CornerRadius="10">
+                                <Grid Margin="5" Width="300">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="MouseLeftButtonUp">
+                                            <i:InvokeCommandAction 
+                                                Command="{Binding ToggleRemovableCommand, ElementName=LayoutRoot}"
+                                                CommandParameter="{Binding}"/>
+                                            <i:InvokeCommandAction 
+                                                Command="{Binding GetAllDataCommand, ElementName=LayoutRoot}"
+                                                CommandParameter="{Binding notebook_id}"/>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
 
+                                    <StackPanel>
+                                        <Label Content="{Binding notebook_id}" Visibility="Collapsed" x:Name="notebook_id"/>
 
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="MouseLeftButtonUp">
-                                        <i:InvokeCommandAction 
-                                            Command="{Binding ToggleRemovableCommand, ElementName=LayoutRoot}"
-                                            CommandParameter="{Binding}"/>
-                                        <i:InvokeCommandAction 
-                                            Command="{Binding GetAllDataCommand, ElementName=LayoutRoot}"
-                                            CommandParameter="{Binding notebook_id}"/>
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
+                                        <Image Source="{Binding image}" Height="200"/>
+                                        <TextBlock Text="{Binding name}"/>
+                                        <TextBlock Text="{Binding price}"/>
+                                        <TextBlock Text="{Binding num_of_rates}"/>
+                                        <TextBlock Text="{Binding rate}"/>
+                                    </StackPanel>
 
-                                <Label Content="{Binding notebook_id}" Visibility="Collapsed" x:Name="notebook_id"/>
-
-                                <Image Source="{Binding image}"/>
-                                <TextBlock Text="{Binding name}"/>
-                                <TextBlock Text="{Binding price}"/>
-                                <TextBlock Text="{Binding num_of_rates}"/>
-                                <TextBlock Text="{Binding rate}"/>
-                            </StackPanel>
+                                    <Rectangle Style="{StaticResource SelectedBorder}"/>
+                                </Grid>
+                            </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                     <ItemsControl.ItemsPanel>
@@ -104,19 +219,23 @@
                 </ItemsControl>
 
                 <DockPanel LastChildFill="True" HorizontalAlignment="Center">
-                    <Button DockPanel.Dock="Left" Content="&lt;" Command="{Binding ChangePageCommand}">
+                    <Button DockPanel.Dock="Left" Command="{Binding ChangePageCommand}" Style="{StaticResource On_Edition_Button}">
                         <Button.CommandParameter>
                             <sys:Int32>-1</sys:Int32>
                         </Button.CommandParameter>
+
+                        <Image Source="pack://application:,,,/src/imgs/arrow-left.png"/>
                     </Button>
-                    <TextBlock Text="{Binding CurPage}" Width="40" TextAlignment="Center"/>
-                    <Button DockPanel.Dock="Right" Content=">" Command="{Binding ChangePageCommand}">
+                    <TextBlock Text="{Binding CurPage}" FontSize="26" Width="40" TextAlignment="Center"/>
+                    <Button DockPanel.Dock="Right" Command="{Binding ChangePageCommand}" Style="{StaticResource On_Edition_Button}">
                         <Button.CommandParameter>
                             <sys:Int32>1</sys:Int32>
                         </Button.CommandParameter>
+                        
+                        <Image Source="pack://application:,,,/src/imgs/arrow-right.png"/>
                     </Button>
                 </DockPanel>
             </StackPanel>
-        </ScrollViewer>
+        </controls:SmoothScrollViewer>
     </Grid>
 </UserControl>

@@ -6,10 +6,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-/*
- * 1. Соединение
- * 2. Реализация запросов
- */
 
 namespace myStore
 {
@@ -36,7 +32,7 @@ namespace myStore
             }
         }
 
-        public static async IAsyncEnumerable<T> SimpleEnumerate<T>(string sql) where T : class
+        public static async IAsyncEnumerable<T> EnumerateArray<T>(string sql) where T : class
         {
             using (var connection = new NpgsqlConnection(connection_string))
             {
@@ -86,7 +82,7 @@ namespace myStore
 
                 if (parameters != null)
                 {
-                    sql = String.Format(sql, String.Join(", ", parameters.Select(item => $"{item.Key} = :{item.Key}")));
+                    sql = string.Format(sql, string.Join(", ", parameters.Select(item => $"{item.Key} = :{item.Key}")));
                 }
 
                 using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
@@ -106,20 +102,22 @@ namespace myStore
             }
         }
 
-        public static async void Insert<T>(string tableName, IEnumerable<T> values, string[] ignore_members) where T : Accessored<T>
+        public static async Task<int> Insert<T>(string tableName, IEnumerable<T> values, string ID_name) where T : Accessored<T>
         {
+            object new_id = -1;
+            
             using (var connection = new NpgsqlConnection(connection_string))
             {
                 await connection.OpenAsync();
 
 
-                var fieldNames = Accessored<T>.fieldNames().Where(fn => !ignore_members.Contains(fn));
-                var header_template = String.Join(", ", fieldNames);
-                var values_template = String.Join(", ", fieldNames.Select(h => $":{h}{{0}}")); // {{0}} - row indicator
-                var enumerated_values_template = Enumerable.Range(0, values.Count()).Select(i => $"({String.Format(values_template, i)})");
-                var values_pattern = String.Join(", ", enumerated_values_template);
+                var fieldNames = Accessored<T>.fieldNames().Where(fn => ID_name != fn);
+                var header_template = string.Join(", ", fieldNames);
+                var values_template = string.Join(", ", fieldNames.Select(h => $":{h}{{0}}")); // {{0}} - row indicator
+                var enumerated_values_template = Enumerable.Range(0, values.Count()).Select(i => $"({string.Format(values_template, i)})");
+                var values_pattern = string.Join(", ", enumerated_values_template);
 
-                var sql = $"INSERT INTO {tableName}({header_template}) VALUES {values_pattern}";
+                var sql = $"INSERT INTO {tableName}({header_template}) VALUES {values_pattern} RETURNING { ID_name }";
 
                 using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
                 {
@@ -131,11 +129,13 @@ namespace myStore
                         }
                     }
 
-                    await command.ExecuteNonQueryAsync();
+                    new_id = await command.ExecuteScalarAsync();
                 }
 
                 await connection.CloseAsync();
             }
+
+            return (int)new_id;
         }
 
         public static T ConvertToObject<T>(this NpgsqlDataReader rd) where T : Accessored<T>, new()
@@ -147,7 +147,7 @@ namespace myStore
             {
                 string fieldName = rd.GetName(i);
 
-                if (fieldNames.Any(m => string.Equals(m, fieldName, StringComparison.OrdinalIgnoreCase)))
+                if (fieldNames.Any(fn => string.Equals(fn, fieldName, StringComparison.OrdinalIgnoreCase)))
                 {
                     if (rd.IsDBNull(i)) t[fieldName] = null;
                     else t[fieldName] = rd.GetValue(i);
