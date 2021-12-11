@@ -14,7 +14,7 @@ namespace myStore.myPages
 {
     public partial class NotebookPage : UserControl, INotifyPropertyChanged
     {
-        public delegate void Ready2OpenMainMenuEventHandler(short sort_key_idx, int ID);
+        public delegate void Ready2OpenMainMenuEventHandler();
         public event Ready2OpenMainMenuEventHandler Ready2OpenMainMenuEvent;
 
         
@@ -84,7 +84,7 @@ namespace myStore.myPages
 
 
 
-        public NotebookPage(int ID, short sort_key_idx, int page)
+        public NotebookPage(int ID)
         {
             vNotebook = new VerifyObject<Notebook>(("notebook_id", ID));
 
@@ -144,7 +144,7 @@ namespace myStore.myPages
                 _ => !isEditable
                 );
 
-            OpenMainMenuCommand = new RelayCommand(_ => Ready2OpenMainMenuEvent(sort_key_idx, page));
+            OpenMainMenuCommand = new RelayCommand(_ => Ready2OpenMainMenuEvent());
 
             CancelChangesCommand = new RelayCommand(
                 _ =>
@@ -189,7 +189,7 @@ namespace myStore.myPages
             RemoveNotebookCommand = new RelayCommand(
                 _ => {
                     RemoveThisNotebook();
-                    Ready2OpenMainMenuEvent(sort_key_idx, page);
+                    Ready2OpenMainMenuEvent();
                 },
                 _ => isEditable && vNotebook.obj.notebook_id >= 0
             );
@@ -265,7 +265,7 @@ namespace myStore.myPages
         {
             var selected = comments.Where(c => c.IsPreparedForRemoving);
 
-            Database.ExecuteOne($"DELETE FROM comments WHERE comment_id IN ({ string.Join(",", selected.Select(c => c.obj.comment_id)) })");
+            if (selected.Count() > 0) Database.ExecuteOne($"DELETE FROM comments WHERE comment_id IN ({ string.Join(",", selected.Select(c => c.obj.comment_id)) })");
 
             foreach (var c in selected)
             {

@@ -6,6 +6,7 @@
         xmlns:controls="clr-namespace:myStore.src.controls.ScrollViewer"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
+        xmlns:c="clr-namespace:CalcBinding;assembly=CalcBinding"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         DataContext="{Binding RelativeSource={RelativeSource Self}}" x:Name="LayoutRoot">
     <UserControl.Resources>
@@ -85,7 +86,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid ScrollViewer.HorizontalScrollBarVisibility="Auto">
+    <Grid ScrollViewer.HorizontalScrollBarVisibility="Auto" Style="{StaticResource Fadable}">
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
             <RowDefinition Height="*"/>
@@ -123,14 +124,21 @@
             <Grid Grid.Column="1" HorizontalAlignment="Center">
                 <Grid Background="Transparent" Width="250">
                     <TextBox Width="250" Height="30" Padding="5" TextWrapping="NoWrap"
-                         x:Name="SearchTermTextBox"
+                         x:Name="SearchTermTextBox" Text="{Binding search_string, UpdateSourceTrigger=PropertyChanged}"
                          VerticalContentAlignment="Center" VerticalAlignment="Center" 
-                         HorizontalAlignment="Left" Style="{StaticResource SoftEdgesStyle}"/>
+                         HorizontalAlignment="Left" Style="{StaticResource SoftEdgesStyle}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Command="{Binding ChangePageCommand}" Key="Enter"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+
                     <DockPanel>
                         <DockPanel.Style>
                             <Style TargetType="DockPanel">
+                                <Setter Property="Opacity" Value="0"/>
+
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Text, ElementName=SearchTermTextBox}" Value="">
+                                    <DataTrigger Binding="{Binding search_string}" Value="">
                                         <DataTrigger.EnterActions>
                                             <BeginStoryboard>
                                                 <Storyboard>
@@ -159,17 +167,17 @@
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource SortButtons}">
                 <TextBlock Text="sort:  "/>
 
-                <Button Content="{Binding sort_states[0]}" Command="{Binding ChangeSortStateCommand}" ContentStringFormat="{}{0} price ">
+                <Button Content="{Binding sort_state[0]}" Command="{Binding ChangeSortStateCommand}" ContentStringFormat="{}{0} price ">
                     <Button.CommandParameter>
                         <sys:Int16>1</sys:Int16>
                     </Button.CommandParameter>
                 </Button>
-                <Button Content="{Binding sort_states[1]}" Command="{Binding ChangeSortStateCommand}" ContentStringFormat="{}{0} rating ">
+                <Button Content="{Binding sort_state[1]}" Command="{Binding ChangeSortStateCommand}" ContentStringFormat="{}{0} rating ">
                     <Button.CommandParameter>
                         <sys:Int16>2</sys:Int16>
                     </Button.CommandParameter>
                 </Button>
-                <Button Content="{Binding sort_states[2]}" Command="{Binding ChangeSortStateCommand}" ContentStringFormat="{}{0} popularity ">
+                <Button Content="{Binding sort_state[2]}" Command="{Binding ChangeSortStateCommand}" ContentStringFormat="{}{0} popularity ">
                     <Button.CommandParameter>
                         <sys:Int16>3</sys:Int16>
                     </Button.CommandParameter>
@@ -177,38 +185,56 @@
             </StackPanel>
         </Grid>
 
-        <controls:SmoothScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Margin="0,40,0,40"
-                                     Grid.Row="1" x:Name="ScrollableMenu" CanContentScroll="False">
-            <StackPanel HorizontalAlignment="Center">
-                <ItemsControl ItemsSource="{Binding notebooks}" x:Name="gList">
+        <controls:SmoothScrollViewer Grid.Row="1" x:Name="ScrollableMenu" CanContentScroll="False" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="60"/>
+                </Grid.RowDefinitions>
+
+                <ItemsControl Grid.Row="0" ItemsSource="{Binding notebooks}" HorizontalAlignment="Center">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border CornerRadius="10">
-                                <Grid Margin="5" Width="300">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="MouseLeftButtonUp">
-                                            <i:InvokeCommandAction 
+                            <Grid Style="{StaticResource Fadable}" Margin="20" Width="300">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="MouseLeftButtonUp">
+                                        <i:InvokeCommandAction 
                                                 Command="{Binding ToggleRemovableCommand, ElementName=LayoutRoot}"
                                                 CommandParameter="{Binding}"/>
-                                            <i:InvokeCommandAction 
+                                        <i:InvokeCommandAction 
                                                 Command="{Binding GetAllDataCommand, ElementName=LayoutRoot}"
                                                 CommandParameter="{Binding notebook_id}"/>
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
 
-                                    <StackPanel>
-                                        <Label Content="{Binding notebook_id}" Visibility="Collapsed" x:Name="notebook_id"/>
+                                <StackPanel>
+                                    <Label Content="{Binding notebook_id}" Visibility="Collapsed" x:Name="notebook_id"/>
 
-                                        <Image Source="{Binding image}" Height="200"/>
-                                        <TextBlock Text="{Binding name}"/>
-                                        <TextBlock Text="{Binding price}"/>
-                                        <TextBlock Text="{Binding num_of_rates}"/>
-                                        <TextBlock Text="{Binding rate}"/>
-                                    </StackPanel>
+                                    <Image Source="{Binding image}" Height="200"/>
+                                    <TextBlock Text="{Binding name}" HorizontalAlignment="Center" TextWrapping="Wrap" Margin="5" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding price, StringFormat={}{0} ₽}" HorizontalAlignment="Center" Background="#44FF0000" Padding="5"/>
 
-                                    <Rectangle Style="{StaticResource SelectedBorder}"/>
-                                </Grid>
-                            </Border>
+                                    <DockPanel Margin="0,5,0,0">
+                                        <Image DockPanel.Dock="Left" Source="pack://application:,,,/src/imgs/user.png" Width="16"/>
+                                        <TextBlock DockPanel.Dock="Left" Text="{Binding num_of_rates}"/>
+
+                                        <Grid DockPanel.Dock="Right" Style="{StaticResource Fadable}" HorizontalAlignment="Right">
+                                            <Rectangle HorizontalAlignment="Left" Width="{c:Binding rate*8}" Height="16" Fill="Black">
+                                                <Rectangle.OpacityMask>
+                                                    <ImageBrush ImageSource="pack://application:,,,/src/imgs/star.png" TileMode="Tile" Viewport="0,0,16,16" ViewportUnits="Absolute"/>
+                                                </Rectangle.OpacityMask>
+                                            </Rectangle>
+                                            <Rectangle Width="80" Height="16" HorizontalAlignment="Left">
+                                                <Rectangle.Fill>
+                                                    <ImageBrush ImageSource="pack://application:,,,/src/imgs/star_empty.png" TileMode="Tile" Viewport="0,0,16,16" ViewportUnits="Absolute"/>
+                                                </Rectangle.Fill>
+                                            </Rectangle>
+                                        </Grid>
+                                    </DockPanel>
+                                </StackPanel>
+
+                                <Rectangle Style="{StaticResource SelectedBorder}"/>
+                            </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                     <ItemsControl.ItemsPanel>
@@ -218,7 +244,21 @@
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
 
-                <DockPanel LastChildFill="True" HorizontalAlignment="Center">
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Text="empty result" Padding="40,30,40,30" Background="LightGray" Foreground="Gray" FontSize="30">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Fadable}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding notebooks.Count}" Value="0">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <DockPanel Grid.Row="1" LastChildFill="True" HorizontalAlignment="Center" VerticalAlignment="Top">
                     <Button DockPanel.Dock="Left" Command="{Binding ChangePageCommand}" Style="{StaticResource On_Edition_Button}">
                         <Button.CommandParameter>
                             <sys:Int32>-1</sys:Int32>
@@ -235,7 +275,7 @@
                         <Image Source="pack://application:,,,/src/imgs/arrow-right.png"/>
                     </Button>
                 </DockPanel>
-            </StackPanel>
+            </Grid>
         </controls:SmoothScrollViewer>
     </Grid>
 </UserControl>

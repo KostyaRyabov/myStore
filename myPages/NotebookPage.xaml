@@ -52,7 +52,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Canvas PreviewMouseWheel="MouseWheel">
+    <Canvas PreviewMouseWheel="MouseWheel" Style="{StaticResource Fadable}">
         <Canvas.Resources>
             <Style TargetType="Label" x:Key="label_style">
                 <Setter Property="Canvas.Right" Value="40"/>
@@ -165,9 +165,9 @@
                             </MultiTrigger>
                         </Style.Triggers>
                     </Style>
-                    <Style TargetType="{x:Type bp:MultiSelectCombobox}" BasedOn="{StaticResource SoftEdgesStyle}">
+                    <Style TargetType="{x:Type bp:MultiSelectCombobox}">
                         <Setter Property="IsEnabled" Value="{Binding isEditable, ElementName=LayoutRoot}"/>
-
+                        
                         <Style.Triggers>
                             <MultiTrigger>
                                 <MultiTrigger.Conditions>
@@ -737,7 +737,7 @@
             </StackPanel>
         </controls:SmoothScrollViewer>
 
-        <StackPanel Orientation="Horizontal" Width="{c:Binding ElementName=LayoutRoot, Path=ActualWidth-20}" Background="White">
+        <StackPanel Orientation="Horizontal" Width="{c:Binding Path=ActualWidth-20, ElementName=LayoutRoot}" Background="White">
             <Button Command="{Binding CancelChangesCommand}" Style="{StaticResource On_Edition_Button}">
                 <Image Source="pack://application:,,,/src/imgs/cancel.png"/>
             </Button>

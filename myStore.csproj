@@ -393,6 +393,13 @@
   <ItemGroup>
     <Resource Include="src\imgs\arrow-left.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="src\imgs\star.png" />
+    <Resource Include="src\imgs\star_empty.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="src\imgs\user.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\System.Text.Json.6.0.0\build\System.Text.Json.targets" Condition="Exists('packages\System.Text.Json.6.0.0\build\System.Text.Json.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

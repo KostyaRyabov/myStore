@@ -1,14 +1,9 @@
 ﻿using myStore.entities;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace myStore.myPages
 {
@@ -29,12 +24,12 @@ namespace myStore.myPages
         public RelayCommand ChangePageCommand { get; }
 
 
-        public delegate void Ready2OpenNotebookEventHandler(short sort_key_idx, int ID);
+        public delegate void Ready2OpenNotebookEventHandler(int ID = -1);
         public event Ready2OpenNotebookEventHandler Ready2OpenNotebookEvent;
 
         private const int limit = 50;
 
-        private int cur_page = 0;
+        private static int cur_page = 0;
         public int CurPage
         {
             get { return cur_page; }
@@ -51,11 +46,11 @@ namespace myStore.myPages
         private bool sort_asc = true;
         
         private string[] sort_keys = { "notebook_id", "price", "rate", "num_of_rates" };
-        private short sort_active_idx;
+        private static short sort_active_idx = 0;
         
-        public object sort_states
+        public object sort_state
         {
-            get => Enumerable.Range(1, 3).Select(i => (i == sort_active_idx)? ((sort_asc)? '▼' : '▲') : ' ').ToArray();
+            get => Enumerable.Range(1, 3).Select(i => (i == sort_active_idx)? (sort_asc? '▼' : '▲') : ' ').ToArray();
             set
             {
                 var idx = (short)value;
@@ -68,28 +63,37 @@ namespace myStore.myPages
                 else
                 {
                     sort_asc ^= true;
+                    if (sort_asc) sort_active_idx = 0;
                 }
 
-                OnPropertyChanged("sort_states");
+                OnPropertyChanged("sort_state");
+            }
+        }
+
+        private static string _search_string = "";
+        public string search_string
+        {
+            get => _search_string;
+            set
+            {
+                _search_string = value;
+                OnPropertyChanged("search_string");
             }
         }
 
         public RelayCommand ChangeSortStateCommand { get; }
 
 
-        public MainMenu(short sort_key_idx, int page)
+        public MainMenu()
         {
-            sort_states = sort_key_idx;
-            CurPage = page;
-
             notebooks = new ObservableCollection<NotebookView>();
 
 
-            ChangeSortStateCommand = new RelayCommand(i => { sort_states = i; ChangePageCommand.Execute(-2); });
+            ChangeSortStateCommand = new RelayCommand(i => { sort_state = i; ChangePageCommand.Execute(null); });
 
-            CreateNotebookCommand = new RelayCommand(_ => Ready2OpenNotebookEvent(sort_active_idx, -1));
+            CreateNotebookCommand = new RelayCommand(_ => Ready2OpenNotebookEvent());
             GetAllDataCommand = new RelayCommand(
-                obj => Ready2OpenNotebookEvent(sort_active_idx, (int)obj),
+                obj => Ready2OpenNotebookEvent((int)obj),
                 _ => !IsRemovable
             );
             PrepareRemovingCommand = new RelayCommand(
@@ -119,9 +123,16 @@ namespace myStore.myPages
             ChangePageCommand = new RelayCommand(
                 async obj =>
                 {
-                    int v = (int)obj;
+                    int new_page, vector = 0;
 
-                    int new_page = (v == -2) ? 0 : CurPage + v;
+                    if (obj is null) {
+                        new_page = 0;
+                    }
+                    else
+                    {
+                        vector = (int)obj;
+                        new_page = CurPage + vector;
+                    }
 
                     IsRemovable = false;
                     bool IsClearable = true;
@@ -129,7 +140,10 @@ namespace myStore.myPages
                     var order_by = sort_keys[sort_active_idx];
                     var diraction = sort_direction_word[sort_asc ? 1 : 0];
 
-                    string sql = $"SELECT * FROM notebook_view ORDER BY {order_by} {diraction} LIMIT {limit} OFFSET {new_page * limit}";
+                    string sql =    $"SELECT * FROM notebook_view " +
+                                    $"WHERE name ~* '{search_string}' " +
+                                    $"ORDER BY {order_by} {diraction} " +
+                                    $"LIMIT {limit} OFFSET {new_page * limit}";
 
                     await foreach (NotebookView item in Database.Enumerate<NotebookView>(sql))
                     {
@@ -142,12 +156,14 @@ namespace myStore.myPages
 
                         notebooks.Add(item);
                     }
+
+                    if (IsClearable && new_page == 0 && search_string.Count() > 0) notebooks.Clear();
+
+                    if (obj == null) ScrollableMenu.ScrollToVerticalOffset(0);
                 },
                 obj =>
                 {
-                    if (obj is null) return false;
-
-                    return CurPage + (int)obj >= 0 || notebooks.Count < limit || notebooks.Count == 0 && (int)obj > 0;
+                    return obj == null || (int)obj >= 0 || CurPage > 0;
                 }
             );
 
