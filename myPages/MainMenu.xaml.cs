@@ -42,7 +42,6 @@ namespace myStore.myPages
 
 
         
-        private string[] sort_direction_word = { "ASC", "DESC"};
         private bool sort_asc = true;
         
         private string[] sort_keys = { "notebook_id", "price", "rate", "num_of_rates" };
@@ -50,7 +49,7 @@ namespace myStore.myPages
         
         public object sort_state
         {
-            get => Enumerable.Range(1, 3).Select(i => (i == sort_active_idx)? (sort_asc? '▼' : '▲') : ' ').ToArray();
+            get => Enumerable.Range(1, 3).Select(i => (i == sort_active_idx)? (sort_asc? '▲' : '▼') : ' ').ToArray();
             set
             {
                 var idx = (short)value;
@@ -138,7 +137,7 @@ namespace myStore.myPages
                     bool IsClearable = true;
 
                     var order_by = sort_keys[sort_active_idx];
-                    var diraction = sort_direction_word[sort_asc ? 1 : 0];
+                    var diraction = sort_asc ? "ASC" : "DESC";
 
                     string sql =    $"SELECT * FROM notebook_view " +
                                     $"WHERE name ~* '{search_string}' " +
@@ -160,6 +159,7 @@ namespace myStore.myPages
                     if (IsClearable && new_page == 0 && search_string.Count() > 0) notebooks.Clear();
 
                     if (obj == null) ScrollableMenu.ScrollToVerticalOffset(0);
+                    else if (vector != 0) ScrollableMenu.ScrollToVerticalOffset(999999);
                 },
                 obj =>
                 {

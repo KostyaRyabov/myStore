@@ -3,7 +3,46 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:myStore"
-        mc:Ignorable="d"
+        mc:Ignorable="d" DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <ResourceDictionary Source="pack://application:,,,/src/styles/ContolsStyle.xaml"/>
+    </Window.Resources>
+    
+    <Grid>
+        <ContentControl Name="window_content" Content="{Binding CurPage}"/>
+
+        <Canvas>
+            <ItemsControl ItemsSource="{Binding Messages}" Canvas.Bottom="0" Canvas.Right="0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" MouseRightButtonDown="TextBlock_MouseRightButtonDown">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Background" Value="LightGreen"/>
+                                    <Setter Property="Width" Value="600"/>
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="Margin" Value="5"/>
+                                    <Setter Property="Padding" Value="5"/>
+
+                                    <Style.Triggers>
+                                        <EventTrigger RoutedEvent="Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.9" Duration="0:0:1"/>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:1:0"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Canvas>
+    </Grid>
 </Window>

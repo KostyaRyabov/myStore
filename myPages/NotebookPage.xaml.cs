@@ -263,7 +263,7 @@ namespace myStore.myPages
 
         public void RemoveComents()
         {
-            var selected = comments.Where(c => c.IsPreparedForRemoving);
+            var selected = comments.Where(c => c.IsPreparedForRemoving).ToArray();
 
             if (selected.Count() > 0) Database.ExecuteOne($"DELETE FROM comments WHERE comment_id IN ({ string.Join(",", selected.Select(c => c.obj.comment_id)) })");
 
@@ -349,6 +349,9 @@ namespace myStore.myPages
             }
         }
 
+        
+        
+        
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string prop = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
 

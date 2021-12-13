@@ -12,7 +12,11 @@ namespace myStore
     public static class Database
     {
         private static string connection_string = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-        
+
+
+        public delegate void MessageEventHandler(string str);
+        public static event MessageEventHandler ThrowMessage;
+
         public static async IAsyncEnumerable<T> Enumerate<T>(string sql) where T : Accessored<T>, new()
         {
             using (var connection = new NpgsqlConnection(connection_string))
@@ -30,6 +34,8 @@ namespace myStore
 
                 await connection.CloseAsync();
             }
+
+            ThrowMessage(sql);
         }
 
         public static async IAsyncEnumerable<T> EnumerateArray<T>(string sql) where T : class
@@ -49,6 +55,8 @@ namespace myStore
 
                 await connection.CloseAsync();
             }
+
+            ThrowMessage(sql);
         }
 
         public static async Task<T> GetObject<T>(string sql) where T : Accessored<T>, new()
@@ -71,6 +79,7 @@ namespace myStore
                 await connection.CloseAsync();
             }
 
+            ThrowMessage(sql);
             return result;
         }
 
@@ -100,6 +109,8 @@ namespace myStore
 
                 await connection.CloseAsync();
             }
+            
+            ThrowMessage(sql);
         }
 
         public static async Task<int> Insert<T>(string tableName, IEnumerable<T> values, string ID_name) where T : Accessored<T>
@@ -133,6 +144,8 @@ namespace myStore
                 }
 
                 await connection.CloseAsync();
+
+                ThrowMessage(sql);
             }
 
             return (int)new_id;
