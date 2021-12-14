@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows.Controls;
 
 namespace myStore.myPages
@@ -139,10 +140,37 @@ namespace myStore.myPages
                     var order_by = sort_keys[sort_active_idx];
                     var diraction = sort_asc ? "ASC" : "DESC";
 
-                    string sql =    $"SELECT * FROM notebook_view " +
-                                    $"WHERE name ~* '{search_string}' " +
-                                    $"ORDER BY {order_by} {diraction} " +
-                                    $"LIMIT {limit} OFFSET {new_page * limit}";
+                    var sql = $@"WITH all_stats AS (
+	                                SELECT comments.notebook_id, comments.comment_id, comments.screen_rate AS rate FROM comments
+	                                UNION ALL
+	                                SELECT comments.notebook_id, comments.comment_id, comments.power_rate          FROM comments
+	                                UNION ALL
+	                                SELECT comments.notebook_id, comments.comment_id, comments.work_duration_rate  FROM comments
+                                )
+
+                                SELECT
+	                                notebooks.notebook_id,
+	                                notebooks.price,
+	                                notebooks.name,
+	                                notebooks.image, 
+	                                count(all_stats.comment_id) / 3 AS num_of_rates,
+	                                CASE
+		                                WHEN count(all_stats.rate) <> 0
+		                                THEN avg(all_stats.rate)
+		                                ELSE 0::numeric
+	                                END AS rate
+
+	                                FROM notebooks LEFT JOIN all_stats USING(notebook_id)
+	                                WHERE
+		                                notebooks.name  ~* '{search_string}' OR
+		                                notebooks.software_os_id    IN (SELECT os_id  		FROM oss 		WHERE name 		    ~* '{search_string}') OR
+		                                notebooks.cpu_id 		 	IN (SELECT cpu_id 		FROM cpus 		WHERE processor     ~* '{search_string}'  OR
+							 									  				                                  producer 	    ~* '{search_string}') OR
+		                                notebooks.gpu_id 			IN (SELECT gpu_id 		FROM gpus 		WHERE video_card    ~* '{search_string}') OR
+		                                notebooks.other_producer_id IN (SELECT producer_id 	FROM producers 	WHERE name 		    ~* '{search_string}')
+	                                GROUP BY notebooks.notebook_id
+                                    ORDER BY {order_by} {diraction}
+                                    LIMIT {limit} OFFSET {new_page * limit}"; ;
 
                     await foreach (NotebookView item in Database.Enumerate<NotebookView>(sql))
                     {

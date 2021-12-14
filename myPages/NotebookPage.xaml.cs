@@ -211,7 +211,7 @@ namespace myStore.myPages
 
         private async void CreateNotebook()
         {
-            vNotebook.obj.notebook_id = await Database.Insert("notebooks", new[] { vNotebook.obj }, "notebook_id");
+            vNotebook.obj.notebook_id = (await Database.Insert("notebooks", new[] { vNotebook.obj }, "notebook_id"))[0];
             vNotebook.SaveChanges(vNotebook.GetChanges());
         }
         private void UpdateNotebook()
@@ -237,12 +237,12 @@ namespace myStore.myPages
         {
             if (new_comments.Count > 0)
             {
-                foreach (var c in new_comments.Reverse())
-                {
-                    comments.Insert(0, new VerifyObject<Comment>(c));
-                }
+                int[] inserted_indexes = await Database.Insert("comments", new_comments, "comment_id");
 
-                await Database.Insert("comments", new_comments, "comment_id");
+                foreach (var (comment, new_idx) in new_comments.Zip(inserted_indexes, (comment, new_idx) => (comment, new_idx)).Reverse())
+                {
+                    comments.Insert(0, new VerifyObject<Comment>(comment, ("comment_id", new_idx)));
+                }
 
                 new_comments.Clear();
             }

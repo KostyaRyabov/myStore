@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Collections;
 using System.Collections.Generic;
-using System.Windows;
-using System.Drawing;
 using System.Windows.Media.Imaging;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.IO;
 using myStore.converters;
 
 namespace myStore.entities
@@ -19,7 +12,7 @@ namespace myStore.entities
     {
         private int _notebook_id;
         private int? _price;
-        private string _name;
+        private string _name = "";
         private short? _display_max_frequency_hz;
         private decimal? _display_diagonal;
 

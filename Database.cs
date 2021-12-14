@@ -14,9 +14,6 @@ namespace myStore
         private static string connection_string = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
 
 
-        public delegate void MessageEventHandler(string str);
-        public static event MessageEventHandler ThrowMessage;
-
         public static async IAsyncEnumerable<T> Enumerate<T>(string sql) where T : Accessored<T>, new()
         {
             using (var connection = new NpgsqlConnection(connection_string))
@@ -34,8 +31,6 @@ namespace myStore
 
                 await connection.CloseAsync();
             }
-
-            ThrowMessage(sql);
         }
 
         public static async IAsyncEnumerable<T> EnumerateArray<T>(string sql) where T : class
@@ -55,8 +50,6 @@ namespace myStore
 
                 await connection.CloseAsync();
             }
-
-            ThrowMessage(sql);
         }
 
         public static async Task<T> GetObject<T>(string sql) where T : Accessored<T>, new()
@@ -79,7 +72,6 @@ namespace myStore
                 await connection.CloseAsync();
             }
 
-            ThrowMessage(sql);
             return result;
         }
 
@@ -109,13 +101,11 @@ namespace myStore
 
                 await connection.CloseAsync();
             }
-            
-            ThrowMessage(sql);
         }
 
-        public static async Task<int> Insert<T>(string tableName, IEnumerable<T> values, string ID_name) where T : Accessored<T>
+        public static async Task<int[]> Insert<T>(string tableName, IList<T> values, string ID_name) where T : Accessored<T>
         {
-            object new_id = -1;
+            int[] new_ids = new int[values.Count];
             
             using (var connection = new NpgsqlConnection(connection_string))
             {
@@ -128,7 +118,10 @@ namespace myStore
                 var enumerated_values_template = Enumerable.Range(0, values.Count()).Select(i => $"({string.Format(values_template, i)})");
                 var values_pattern = string.Join(", ", enumerated_values_template);
 
-                var sql = $"INSERT INTO {tableName}({header_template}) VALUES {values_pattern} RETURNING { ID_name }";
+                var sql = $@"   WITH idxs AS (INSERT INTO {tableName}({header_template}) VALUES {values_pattern} RETURNING { ID_name })
+                                SELECT array_agg({ ID_name }) FROM idxs";
+
+                //var sql = $"INSERT INTO {tableName}({header_template}) VALUES {values_pattern} RETURNING { ID_name }";
 
                 using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
                 {
@@ -136,19 +129,17 @@ namespace myStore
                     {
                         foreach (var fn in fieldNames)
                         {
-                            command.Parameters.AddWithValue($"{fn}{i}", values.ElementAt(i)[fn] ?? DBNull.Value);
+                            command.Parameters.AddWithValue($"{fn}{i}", values[i][fn] ?? DBNull.Value);
                         }
                     }
 
-                    new_id = await command.ExecuteScalarAsync();
+                    new_ids = await command.ExecuteScalarAsync() as int[];
                 }
 
                 await connection.CloseAsync();
-
-                ThrowMessage(sql);
             }
 
-            return (int)new_id;
+            return new_ids;
         }
 
         public static T ConvertToObject<T>(this NpgsqlDataReader rd) where T : Accessored<T>, new()

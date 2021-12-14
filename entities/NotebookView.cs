@@ -6,7 +6,7 @@ namespace myStore.entities
     public class NotebookView : Accessored<NotebookView>, INotifyPropertyChanged
     {
         public int notebook_id { get; set; }
-        public int price { get; set; }
+        public int? price { get; set; }
         public string name { get; set; }
         private byte[] _image;
         public byte[] image
@@ -22,7 +22,7 @@ namespace myStore.entities
                 OnPropertyChanged("image");
             }
         }
-        public long num_of_rates { get; set; }
+        public long? num_of_rates { get; set; }
         public decimal rate { get; set; }
 
 
