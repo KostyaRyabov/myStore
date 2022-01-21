@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using System.Windows.Controls;
 
 namespace myStore.myPages
@@ -170,7 +169,7 @@ namespace myStore.myPages
 		                                notebooks.other_producer_id IN (SELECT producer_id 	FROM producers 	WHERE name 		    ~* '{search_string}')
 	                                GROUP BY notebooks.notebook_id
                                     ORDER BY {order_by} {diraction}
-                                    LIMIT {limit} OFFSET {new_page * limit}"; ;
+                                    LIMIT {limit} OFFSET {new_page * limit}";
 
                     await foreach (NotebookView item in Database.Enumerate<NotebookView>(sql))
                     {
