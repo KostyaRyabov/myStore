@@ -1,4 +1,4 @@
-# MyStore
+# MyStore (WPF)
 This assignment is for educational purposes.
 Data taken from https://www.svyaznoy.ru/.
 
